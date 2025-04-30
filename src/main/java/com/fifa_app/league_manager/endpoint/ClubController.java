@@ -1,11 +1,12 @@
 package com.fifa_app.league_manager.endpoint;
 
+import com.fifa_app.league_manager.model.Club;
 import com.fifa_app.league_manager.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -16,5 +17,10 @@ public class ClubController {
     @GetMapping("")
     public Object getClubs() {
         return clubService.getClubs();
+    }
+
+    @PostMapping("")
+    public Object saveAll(@RequestBody() List<Club> entities){
+        return clubService.saveAll(entities);
     }
 }

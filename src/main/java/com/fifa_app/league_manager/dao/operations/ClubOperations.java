@@ -3,8 +3,11 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.ClubMapper;
 import com.fifa_app.league_manager.model.Club;
+import com.fifa_app.league_manager.model.ClubCoach;
 import com.fifa_app.league_manager.model.Coach;
+import com.fifa_app.league_manager.model.Season;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -13,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,6 +24,8 @@ public class ClubOperations implements CrudOperations<Club> {
     private final DataSource dataSource;
     private final ClubMapper clubMapper;
     private final CoachOperations coachOperations;
+    private final SeasonOperations seasonOperations;
+    private final ClubCoachOperations clubCoachOperations;
 
     @Override
     public List<Club> getAll() {
@@ -44,5 +50,50 @@ public class ClubOperations implements CrudOperations<Club> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @SneakyThrows
+    public List<Club> saveAll(List<Club> entities) {
+        List<Club> clubList = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement =
+                         connection.prepareStatement("insert into club (id, name, acronym, year_creation, stadium) values (?, ?, ?, ?, ?)"
+                                 + " on conflict (id, name) do update set name=excluded.name,"
+                                 + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium"
+                                 + " returning id, name, stadium, year_creation, acronym")) {
+                entities.forEach(entityToSave -> {
+                    try {
+                        statement.setString(1, entityToSave.getId());
+                        statement.setString(2, entityToSave.getName());
+                        statement.setString(3, entityToSave.getAcronym());
+                        statement.setLong(4, entityToSave.getYearCreation());
+                        statement.setString(5, entityToSave.getStadium());
+
+                        this.saveCoachAndClubCoach(entityToSave);
+
+                        statement.addBatch();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        clubList.add(clubMapper.apply(resultSet));
+                    }
+                }
+                return clubList;
+            }
+        }
+    }
+
+    private void saveCoachAndClubCoach(Club entityToSave){
+        Coach coach = coachOperations.save(entityToSave.getCoach());
+
+        ClubCoach clubCoach = new ClubCoach();
+        clubCoach.setId(UUID.randomUUID().toString());
+        clubCoach.setClub(entityToSave);
+        clubCoach.setCoach(coach);
+
+        clubCoachOperations.save(clubCoach);
     }
 }

@@ -16,7 +16,6 @@ public class ClubCoach {
     private String id;
     private Club club;
     private Coach coach;
-    private Season season;
     private Instant startDate;
     private Instant endDate;
 }
