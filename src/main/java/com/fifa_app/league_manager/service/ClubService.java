@@ -16,7 +16,12 @@ public class ClubService {
 
     public ResponseEntity<Object> getClubs() {
         List<Club> clubs = clubOperations.getAll();
-        // List<DishSoldRest> dishSoldRests = dishSolds.stream().map(dishSoldRestMapper::toRest).toList();
+
+        return ResponseEntity.ok().body(clubs);
+    }
+
+    public ResponseEntity<Object> saveAll(List<Club> entities) {
+        List<Club> clubs = clubOperations.saveAll(entities);
 
         return ResponseEntity.ok().body(clubs);
     }
