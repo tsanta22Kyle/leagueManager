@@ -45,4 +45,27 @@ public class ClubOperations implements CrudOperations<Club> {
             throw new RuntimeException(e);
         }
     }
+
+    public Club getById(String clubId){
+        Club club = null;
+        try(
+                Connection conn = dataSource.getConnection();
+                PreparedStatement statement = conn.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id from club c inner join club_coach cc on cc.team_id = c.id where c.id=?")
+                )
+
+        {
+            statement.setString(1,clubId);
+            try(
+                    ResultSet rs = statement.executeQuery()
+                    ){
+                if(rs.next()){
+
+                return clubMapper.apply(rs);
+                }
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return club;
+    }
 }
