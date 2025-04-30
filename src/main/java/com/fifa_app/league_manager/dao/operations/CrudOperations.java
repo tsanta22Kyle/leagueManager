@@ -1,4 +1,7 @@
 package com.fifa_app.league_manager.dao.operations;
 
-public interface CrudOperations {
+import java.util.List;
+
+public interface CrudOperations<E> {
+    List<E> getAll();
 }
