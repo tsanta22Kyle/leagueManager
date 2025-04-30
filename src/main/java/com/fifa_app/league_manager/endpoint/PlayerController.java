@@ -5,6 +5,7 @@ import com.fifa_app.league_manager.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -16,8 +17,10 @@ public class PlayerController {
 
     private final PlayerService playerService;
     @GetMapping("")
-    public Object getAllPlayers() {
-       return playerService.getAllPlayers();
+    public Object getAllPlayers(
+            @RequestParam( required = false ,defaultValue = "") String name ,@RequestParam(required = false,defaultValue = "0") int ageMinimum,@RequestParam(required = false , defaultValue = "1000") int ageMaximum ,@RequestParam(required = false,defaultValue = "") String clubName
+    ) {
+       return playerService.getAllPlayers(name,ageMinimum,ageMaximum,clubName);
     }
 
 }
