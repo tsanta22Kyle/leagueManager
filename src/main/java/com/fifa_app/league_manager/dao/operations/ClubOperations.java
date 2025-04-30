@@ -24,7 +24,6 @@ public class ClubOperations implements CrudOperations<Club> {
     private final DataSource dataSource;
     private final ClubMapper clubMapper;
     private final CoachOperations coachOperations;
-    private final SeasonOperations seasonOperations;
     private final ClubCoachOperations clubCoachOperations;
 
     @Override
@@ -58,7 +57,7 @@ public class ClubOperations implements CrudOperations<Club> {
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement =
                          connection.prepareStatement("insert into club (id, name, acronym, year_creation, stadium) values (?, ?, ?, ?, ?)"
-                                 + " on conflict (id, name) do update set name=excluded.name,"
+                                 + " on conflict (name) do update set id=excluded.id ,name=excluded.name,"
                                  + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium"
                                  + " returning id, name, stadium, year_creation, acronym")) {
                 entities.forEach(entityToSave -> {
@@ -78,7 +77,13 @@ public class ClubOperations implements CrudOperations<Club> {
                 });
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
-                        clubList.add(clubMapper.apply(resultSet));
+                        Club savedClub = clubMapper.apply(resultSet);
+
+                        ClubCoach clubCoach = clubCoachOperations.findByClubId(savedClub.getId());
+                        Coach coach = coachOperations.getCoachById(clubCoach.getCoach().getId());
+
+                        savedClub.setCoach(coach);
+                        clubList.add(savedClub);
                     }
                 }
                 return clubList;
@@ -86,7 +91,7 @@ public class ClubOperations implements CrudOperations<Club> {
         }
     }
 
-    private void saveCoachAndClubCoach(Club entityToSave){
+    private void saveCoachAndClubCoach(Club entityToSave) {
         Coach coach = coachOperations.save(entityToSave.getCoach());
 
         ClubCoach clubCoach = new ClubCoach();

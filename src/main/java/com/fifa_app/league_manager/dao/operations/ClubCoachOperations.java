@@ -26,7 +26,7 @@ public class ClubCoachOperations implements CrudOperations<ClubCoach> {
     public List<ClubCoach> getAll() {
         List<ClubCoach> clubs = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select c.id, c.coach_id, c.team_id, c.start_date, c.season_id, c.end_date from club_coach c;")) {
+             PreparedStatement statement = connection.prepareStatement("select c.id, c.coach_id, c.team_id, c.start_date, c.end_date from club_coach c;")) {
             /*
             statement.setInt(1, pageSize);
             statement.setInt(2, pageSize * (page - 1));
@@ -42,6 +42,25 @@ public class ClubCoachOperations implements CrudOperations<ClubCoach> {
         }
     }
 
+    public ClubCoach findByClubId(String clubId) {
+        ClubCoach clubCoach = null;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select cc.id, cc.coach_id, cc.team_id, cc.start_date, cc.end_date from club_coach cc where team_id = ?;")) {
+            statement.setString(1, clubId);
+            /*
+            statement.setInt(2, pageSize * (page - 1));
+             */
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    clubCoach = clubCoachMapper.apply(resultSet);
+                }
+            }
+            return clubCoach;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @SneakyThrows
     public ClubCoach save(ClubCoach entity) {
         ClubCoach clubCoach = null;
@@ -49,7 +68,7 @@ public class ClubCoachOperations implements CrudOperations<ClubCoach> {
             try (PreparedStatement statement =
                          connection.prepareStatement("insert into club_coach (id, team_id, coach_id, start_date, end_date)"
                                  + " values (?, ?, ?, ?, ?)"
-                                 + " on conflict (id) do nothing"
+                                 + " on conflict (coach_id) do nothing"
                                  + " returning id, team_id, coach_id, start_date, end_date")) {
                 try {
                     statement.setString(1, entity.getId());

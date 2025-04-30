@@ -75,10 +75,9 @@ public class CoachOperations implements CrudOperations<Coach> {
     public Coach save(Coach entity) {
         Coach coach = null;
         try (Connection connection = dataSource.getConnection()) {
-
             try (PreparedStatement statement =
                          connection.prepareStatement("insert into coach (id, name, country) values (?, ?, ?)"
-                                 + " on conflict (id, name) do nothing"
+                                 + " on conflict (name) do update set name=excluded.name"
                                  + " returning id, name, country")) {
                 try {
                     statement.setString(1, entity.getId());
@@ -93,8 +92,8 @@ public class CoachOperations implements CrudOperations<Coach> {
                         coach = coachMapper.apply(resultSet);
                     }
                 }
-                return coach;
             }
+            return coach;
         }
     }
 }
