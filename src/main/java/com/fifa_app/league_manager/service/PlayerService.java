@@ -1,7 +1,10 @@
 package com.fifa_app.league_manager.service;
 
 import com.fifa_app.league_manager.dao.operations.PlayerCrudOperations;
+import com.fifa_app.league_manager.endpoint.mapper.CreateOrUpdatePlayerMapper;
+import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
 import com.fifa_app.league_manager.model.Player;
+import com.fifa_app.league_manager.model.PlayerClub;
 import com.fifa_app.league_manager.service.exceptions.ClientException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,7 @@ import java.util.List;
 public class PlayerService {
 
     private final PlayerCrudOperations playerCrudOperations;
+    private final CreateOrUpdatePlayerMapper createOrUpdatePlayerMapper;
 
     public ResponseEntity<Object> getAllPlayers(String name,int ageMin,int ageMax,String clubName){
         try {
@@ -34,4 +38,20 @@ public class PlayerService {
 
     }
 
+    public ResponseEntity<Object> saveAll(List<CreateOrUpdatePlayer> players) {
+        List<Player> playerToSave = players.stream().map(createOrUpdatePlayer -> {
+            Player player = createOrUpdatePlayerMapper.toModel(createOrUpdatePlayer);
+            Player existingPlayer = playerCrudOperations.getById(createOrUpdatePlayer.getId());
+            if(existingPlayer!=null){
+                //System.out.println("existing player clubs are "+existingPlayer.getClubs());
+                List<PlayerClub> playerClubs = existingPlayer.getClubs();
+            player.setClubs(playerClubs);
+            return player;
+            }
+            return player;
+        }).toList();
+        List<CreateOrUpdatePlayer> savedPlayers = playerCrudOperations.saveAll(playerToSave).stream().map(player -> createOrUpdatePlayerMapper.toRest(player)).toList();
+
+        return ResponseEntity.ok(savedPlayers);
+    }
 }

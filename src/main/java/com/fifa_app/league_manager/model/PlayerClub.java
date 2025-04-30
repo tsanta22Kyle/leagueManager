@@ -1,5 +1,6 @@
 package com.fifa_app.league_manager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -10,4 +11,7 @@ public class PlayerClub {
     private Club club;
     private LocalDate joinDate;
     private LocalDate endDate;
+    private int number;
+    @JsonIgnore
+    private Player player;
 }

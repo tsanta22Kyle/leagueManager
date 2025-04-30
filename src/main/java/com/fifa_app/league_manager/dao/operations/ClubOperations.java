@@ -80,7 +80,7 @@ public class ClubOperations implements CrudOperations<Club> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    players.add(toBasicPlayer(resultSet));
+                    //players.add(toBasicPlayer(resultSet));
                 }
             }
             return players;
@@ -106,7 +106,7 @@ public class ClubOperations implements CrudOperations<Club> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    players.add(toBasicPlayer(resultSet));
+                  //  players.add(toBasicPlayer(resultSet));
                 }
             }
             throw new RuntimeException("Not finished!");
@@ -166,17 +166,5 @@ public class ClubOperations implements CrudOperations<Club> {
     }
 
 
-    @SneakyThrows
-    public Player toBasicPlayer(ResultSet resultSet) {
-        Player player = new Player();
 
-        player.setId(resultSet.getString("id"));
-        player.setName(resultSet.getString("name"));
-        player.setAge(resultSet.getInt("age"));
-        player.setNumber(resultSet.getInt("number"));
-        player.setCountry(resultSet.getString("country"));
-        player.setPosition(Positions.valueOf(resultSet.getObject("position").toString()));
-
-        return player;
-    }
 }

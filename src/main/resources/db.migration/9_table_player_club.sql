@@ -5,6 +5,8 @@ CREATE TABLE if not exists player_club
     club_id   varchar,
     join_date date,
     end_date  date,
+    number int  ,
     CONSTRAINT player_fk FOREIGN KEY (player_id) REFERENCES player (id),
-    CONSTRAINT club_fk FOREIGN KEY (club_id) REFERENCES club (id)
+    CONSTRAINT club_fk FOREIGN KEY (club_id) REFERENCES club (id),
+    unique (number,club_id)
 );

@@ -1,6 +1,7 @@
 package com.fifa_app.league_manager.dao.mapper;
 
 import com.fifa_app.league_manager.dao.operations.ClubOperations;
+import com.fifa_app.league_manager.dao.operations.PlayerCrudOperations;
 import com.fifa_app.league_manager.model.Club;
 import com.fifa_app.league_manager.model.PlayerClub;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.function.Function;
 public class PlayerClubMapper implements Function<ResultSet, PlayerClub> {
 
     private final ClubOperations clubOperations;
+  //  private final PlayerCrudOperations playerCrudOperations;
 
     @SneakyThrows
     @Override
@@ -29,11 +31,13 @@ public class PlayerClubMapper implements Function<ResultSet, PlayerClub> {
             }
 
             String clubId = resultSet.getString("club_id");
-           // System.out.println("clubId: " + clubId);
+            String playerId = resultSet.getString("player_id");
             Club club = clubOperations.getById(clubId);
             playerClub.setClub(club);
             playerClub.setId(resultSet.getString("id"));
             playerClub.setJoinDate(resultSet.getDate("join_date").toLocalDate());
+            playerClub.setNumber(resultSet.getInt("number"));
+          //  playerClub.setPlayer(playerCrudOperations.getById(playerId));
             return playerClub;
         }
         return null;

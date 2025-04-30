@@ -11,7 +11,6 @@ import java.util.List;
 public class Player {
     private String name;
     private String id;
-    private int number;
     private Positions position;
     private String country;
     private int age;
@@ -19,6 +18,19 @@ public class Player {
     private List<PlayerClub> clubs = new ArrayList<PlayerClub>();
     @JsonProperty("club")
     public Club getActualClub(){
+        if(clubs.size() > 0){
+
         return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getClub();
+        }
+        return null;
     }
+    public int getActualNumber(){
+        if (clubs.size() > 0){
+
+        return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getNumber();
+        }
+        return 0;
+    }
+
+    //
 }
