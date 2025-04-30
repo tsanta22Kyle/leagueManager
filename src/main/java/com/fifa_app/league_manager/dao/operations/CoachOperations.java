@@ -30,7 +30,8 @@ public class CoachOperations implements CrudOperations<Coach> {
     public Coach getCoachById(String id) {
         Coach coach = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select c.id, c.name, c.country from coach c;")) {
+             PreparedStatement statement = connection.prepareStatement("select c.id, c.name, c.country from coach c where c.id = ?;")) {
+            statement.setString(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     coach = coachMapper.apply(resultSet);
