@@ -1,4 +1,4 @@
-package com.fifa_app.league_manager.endpoint.mapper;
+package com.fifa_app.league_manager.dao.mapper;
 
 
 import com.fifa_app.league_manager.model.Coach;
