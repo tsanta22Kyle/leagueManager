@@ -29,6 +29,7 @@ public class PlayerClubMapper implements Function<ResultSet, PlayerClub> {
             }
 
             String clubId = resultSet.getString("club_id");
+           // System.out.println("clubId: " + clubId);
             Club club = clubOperations.getById(clubId);
             playerClub.setClub(club);
             playerClub.setId(resultSet.getString("id"));

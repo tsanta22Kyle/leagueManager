@@ -39,9 +39,9 @@ public class ClubOperations implements CrudOperations<Club> {
                 while (resultSet.next()) {
                     Club clubFromDb = clubMapper.apply(resultSet);
 
-                    Coach coach = coachOperations.getCoachById(resultSet.getString("coach_id"));
+                   // Coach coach = coachOperations.getCoachById(resultSet.getString("coach_id"));
 
-                    clubFromDb.setCoach(coach);
+                    //clubFromDb.setCoach(coach);
                     clubs.add(clubFromDb);
                 }
             }
@@ -56,20 +56,23 @@ public class ClubOperations implements CrudOperations<Club> {
         Club club = null;
         try (
                 Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id from club c inner join club_coach cc on cc.team_id = c.id where c.id=?")
+                PreparedStatement statement = conn.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id from club c inner join club_coach cc on cc.team_id = c.id WHERE c.id=?")
         ) {
             statement.setString(1, clubId);
+
             try (
                     ResultSet rs = statement.executeQuery()
             ) {
-                if (rs.next()) {
+                while (rs.next()) {
+                  //  System.out.println(rs.getString("name"));
+                    club = clubMapper.apply(rs);
 
-                    return clubMapper.apply(rs);
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        //System.out.println("club"+club);
         return club;
     }
     @SneakyThrows
