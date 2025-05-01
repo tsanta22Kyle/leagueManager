@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class SeasonOperations implements CrudOperations<Season> {
+public class SeasonCrudOperations implements CrudOperations<Season> {
     private final DataSource dataSource;
     private final SeasonMapper seasonMapper;
 

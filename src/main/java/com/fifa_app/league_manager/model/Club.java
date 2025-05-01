@@ -1,6 +1,9 @@
 package com.fifa_app.league_manager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +19,7 @@ public class Club {
     private String acronym;
     private String stadium;
     private Coach coach;
+
+    @JsonIgnore
+    private List<Season> seasons;
 }

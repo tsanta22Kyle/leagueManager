@@ -1,8 +1,7 @@
 package com.fifa_app.league_manager.dao.mapper;
 
-import com.fifa_app.league_manager.dao.operations.CoachOperations;
+import com.fifa_app.league_manager.dao.operations.CoachCrudOperations;
 import com.fifa_app.league_manager.model.Club;
-import com.fifa_app.league_manager.model.Coach;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class ClubMapper implements Function<ResultSet, Club> {
 
-    private final CoachOperations coachOperations;
+    private final CoachCrudOperations coachCrudOperations;
 
     @Override
     @SneakyThrows

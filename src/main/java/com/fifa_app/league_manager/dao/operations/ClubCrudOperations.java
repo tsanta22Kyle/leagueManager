@@ -2,12 +2,9 @@ package com.fifa_app.league_manager.dao.operations;
 
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.ClubMapper;
-import com.fifa_app.league_manager.dao.mapper.PlayerMapper;
 import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -20,11 +17,11 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class ClubOperations implements CrudOperations<Club> {
+public class ClubCrudOperations implements CrudOperations<Club> {
     private final DataSource dataSource;
     private final ClubMapper clubMapper;
-    private final CoachOperations coachOperations;
-    private final ClubCoachOperations clubCoachOperations;
+    private final CoachCrudOperations coachCrudOperations;
+    private final ClubCoachCrudOperations clubCoachCrudOperations;
 
     @Override
     public List<Club> getAll() {
@@ -38,7 +35,7 @@ public class ClubOperations implements CrudOperations<Club> {
                 while (resultSet.next()) {
                     Club clubFromDb = clubMapper.apply(resultSet);
 
-                    Coach coach = coachOperations.getCoachById(resultSet.getString("coach_id"));
+                    Coach coach = coachCrudOperations.getCoachById(resultSet.getString("coach_id"));
 
                     clubFromDb.setCoach(coach);
                     clubs.add(clubFromDb);
@@ -142,8 +139,8 @@ public class ClubOperations implements CrudOperations<Club> {
                     while (resultSet.next()) {
                         Club savedClub = clubMapper.apply(resultSet);
 
-                        ClubCoach clubCoach = clubCoachOperations.findByClubId(savedClub.getId());
-                        Coach coach = coachOperations.getCoachById(clubCoach.getCoach().getId());
+                        ClubCoach clubCoach = clubCoachCrudOperations.findByClubId(savedClub.getId());
+                        Coach coach = coachCrudOperations.getCoachById(clubCoach.getCoach().getId());
 
                         savedClub.setCoach(coach);
                         clubList.add(savedClub);
@@ -155,14 +152,14 @@ public class ClubOperations implements CrudOperations<Club> {
     }
 
     private void saveCoachAndClubCoach(Club entityToSave) {
-        Coach coach = coachOperations.save(entityToSave.getCoach());
+        Coach coach = coachCrudOperations.save(entityToSave.getCoach());
 
         ClubCoach clubCoach = new ClubCoach();
         clubCoach.setId(UUID.randomUUID().toString());
         clubCoach.setClub(entityToSave);
         clubCoach.setCoach(coach);
 
-        clubCoachOperations.save(clubCoach);
+        clubCoachCrudOperations.save(clubCoach);
     }
 
 
