@@ -26,7 +26,9 @@ public class ClubCrudOperations implements CrudOperations<Club> {
     @Override
     public List<Club> getAll() {
         List<Club> clubs = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id from club c inner join club_coach cc on cc.team_id = c.id;")) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id" +
+                     " from club c inner join club_coach cc on cc.team_id = c.id;")) {
             /*
             statement.setInt(1, pageSize);
             statement.setInt(2, pageSize * (page - 1));
@@ -67,71 +69,42 @@ public class ClubCrudOperations implements CrudOperations<Club> {
         return club;
     }
 
-
-
-
-    @SneakyThrows
-    public List<Player> changePlayers(String clubId, List<Player> entities) {
-        List<Player> players = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement("")) {
-            entities.forEach(entityToChange -> {
-                String playerId = entityToChange.getId();
-
-
-            });
-
-            // les joueurs à insérer ne doivent pas appartenir à un club sinon 400
-            // vider player_club correspondant
-            // ajouter les nouveaux joueurs dans player_club
-            // creer les nouveaux joueurs si n'existe pas encore
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                  // players.add(toBasicPlayer(resultSet));
-                }
-            }
-            throw new RuntimeException("Not finished!");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @SneakyThrows
     public List<Club> saveAll(List<Club> entities) {
         List<Club> clubList = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("insert into club (id, name, acronym, year_creation, stadium) values (?, ?, ?, ?, ?)"
-                    + " on conflict (name) do update set id=excluded.id ,name=excluded.name,"
-                    + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium"
-                    + " returning id, name, stadium, year_creation, acronym")) {
-                entities.forEach(entityToSave -> {
-                    try {
-                        statement.setString(1, entityToSave.getId());
-                        statement.setString(2, entityToSave.getName());
-                        statement.setString(3, entityToSave.getAcronym());
-                        statement.setLong(4, entityToSave.getYearCreation());
-                        statement.setString(5, entityToSave.getStadium());
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("insert into club (id, name, acronym, year_creation, stadium)"
+                     + " values (?, ?, ?, ?, ?) on conflict (name) do update set id=excluded.id ,name=excluded.name,"
+                     + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium"
+                     + " returning id, name, stadium, year_creation, acronym")) {
 
-                        statement.addBatch();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    entities.forEach(this::saveCoachAndClubCoach);
+            entities.forEach(entityToSave -> {
+                try {
+                    statement.setString(1, entityToSave.getId());
+                    statement.setString(2, entityToSave.getName());
+                    statement.setString(3, entityToSave.getAcronym());
+                    statement.setLong(4, entityToSave.getYearCreation());
+                    statement.setString(5, entityToSave.getStadium());
 
-                    while (resultSet.next()) {
-                        Club savedClub = clubMapper.apply(resultSet);
-
-                        ClubCoach clubCoach = clubCoachCrudOperations.findByClubId(savedClub.getId());
-                        Coach coach = coachCrudOperations.getCoachById(clubCoach.getCoach().getId());
-
-                        savedClub.setCoach(coach);
-                        clubList.add(savedClub);
-                    }
+                    statement.addBatch();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
-                return clubList;
+            });
+            try (ResultSet resultSet = statement.executeQuery()) {
+                entities.forEach(this::saveCoachAndClubCoach);
+
+                while (resultSet.next()) {
+                    Club savedClub = clubMapper.apply(resultSet);
+
+                    ClubCoach clubCoach = clubCoachCrudOperations.findByClubId(savedClub.getId());
+                    Coach coach = coachCrudOperations.getCoachById(clubCoach.getCoach().getId());
+
+                    savedClub.setCoach(coach);
+                    clubList.add(savedClub);
+                }
             }
+            return clubList;
         }
     }
 
@@ -145,7 +118,6 @@ public class ClubCrudOperations implements CrudOperations<Club> {
 
         clubCoachCrudOperations.save(clubCoach);
     }
-
 
 
 }

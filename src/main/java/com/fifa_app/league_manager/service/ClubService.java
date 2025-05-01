@@ -1,19 +1,19 @@
 package com.fifa_app.league_manager.service;
 
 
-import com.fifa_app.league_manager.dao.operations.ClubCrudOperations;
-import com.fifa_app.league_manager.dao.operations.PlayerClubCrudOperations;
-import com.fifa_app.league_manager.dao.operations.PlayerCrudOperations;
+import com.fifa_app.league_manager.dao.operations.*;
 import com.fifa_app.league_manager.endpoint.mapper.CreateOrUpdatePlayerMapper;
 import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
-import com.fifa_app.league_manager.model.Club;
-import com.fifa_app.league_manager.model.Player;
+import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +22,9 @@ public class ClubService {
     private final PlayerCrudOperations playerCrudOperations;
     private final CreateOrUpdatePlayerMapper createOrUpdatePlayerMapper;
     private final PlayerClubCrudOperations playerClubCrudOperations;
+    private final ClubCrudOperations clubCrudOperations;
+    private final ClubParticipationCrudOperations clubParticipationCrudOperations;
+    private final SeasonCrudOperations seasonCrudOperations;
 
 
     public ResponseEntity<Object> getClubs() {
@@ -57,5 +60,47 @@ public class ClubService {
         //  List<Player> players = clubOperations.changePlayers(clubId, entities);
        // return ResponseEntity.ok().body(players);
         return null;
+    }
+
+    public ResponseEntity<Object> attachPlayersToAClub(String clubId, List<Player> entities) {
+        List<Player> players = new ArrayList<>();
+
+        Club existingClub = clubCrudOperations.getById(clubId);
+        if (existingClub == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, ID = " + clubId + " does not exist.");
+        }
+        ClubParticipation existingClubParticipation = clubParticipationCrudOperations.getByClubId(existingClub.getId());
+
+        for (Player player : entities) {
+            Player foundPlayer = playerCrudOperations.getById(player.getId());
+            Player newPlayer = null;
+            if (foundPlayer == null) {
+                List<Player> createdPlayers = playerCrudOperations.saveAll(List.of(player));
+                newPlayer = createdPlayers.getFirst();
+            }
+
+            List<PlayerClub> clubsAttachedToFoundPlayer = playerClubCrudOperations.getPlayerClubsByPlayerId(player.getId());
+            if (!clubsAttachedToFoundPlayer.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed, player " + player.getName() + " is attached to a club: " + clubsAttachedToFoundPlayer.getFirst().getClub().getName() + ".");
+            }
+
+            Season actualSeason = seasonCrudOperations.getById(existingClubParticipation.getSeason().getId());
+
+            PlayerClub playerClub = new PlayerClub();
+            playerClub.setId(UUID.randomUUID().toString());
+            playerClub.setNumber(newPlayer.getActualNumber());
+            playerClub.setSeason(actualSeason);
+            playerClub.setClub(existingClub);
+            playerClub.setEndDate(null);
+            playerClub.setPlayer(newPlayer);
+            playerClub.setJoinDate(LocalDate.now());
+
+            playerClubCrudOperations.saveAll(List.of(playerClub));
+
+            players.add(newPlayer);
+        }
+
+
+        return ResponseEntity.ok().body(players);
     }
 }

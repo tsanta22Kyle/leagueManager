@@ -7,8 +7,12 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-@AllArgsConstructor@NoArgsConstructor@Getter
-@Setter@EqualsAndHashCode
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
 public class Player {
     private String name;
     private String id;
@@ -18,23 +22,24 @@ public class Player {
     private int preferredNumber;
     @JsonIgnore
     private List<PlayerClub> clubs = new ArrayList<PlayerClub>();
-    @JsonProperty("club")
-    public Club getActualClub(){
-        if(clubs.size() > 0){
 
-        return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getClub();
+    @JsonProperty("club")
+    public Club getActualClub() {
+        if (!clubs.isEmpty()) {
+            return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getClub();
         }
         return null;
     }
-    public int getActualNumber(){
-        if (clubs.size() > 0){
 
-        return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getNumber();
+    public int getActualNumber() {
+        if (!clubs.isEmpty()) {
+            return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getNumber();
         }
         return preferredNumber;
     }
-    public PlayerClub endContract(){
-        if(clubs.size() > 0){
+
+    public PlayerClub endContract() {
+        if (!clubs.isEmpty()) {
             clubs.forEach(playerClub -> playerClub.setEndDate(LocalDate.now()));
             return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0);
         }

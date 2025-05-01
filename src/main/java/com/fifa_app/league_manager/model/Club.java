@@ -21,5 +21,5 @@ public class Club {
     private Coach coach;
 
     @JsonIgnore
-    private List<Season> seasons;
+    private List<ClubParticipation> clubParticipations;
 }

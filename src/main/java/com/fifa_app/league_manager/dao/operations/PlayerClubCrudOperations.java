@@ -12,25 +12,27 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-@Repository@RequiredArgsConstructor
+
+@Repository
+@RequiredArgsConstructor
 public class PlayerClubCrudOperations {
 
     private final PlayerClubMapper playerClubMapper;
     private final DataSource dataSource;
 
     public List<PlayerClub> getPlayerClubsByPlayerId(String playerId) {
-        List<PlayerClub> playerClubs = new ArrayList<PlayerClub>();
-        try(
+        List<PlayerClub> playerClubs = new ArrayList<>();
+        try (
                 Connection conn = dataSource.getConnection();
                 PreparedStatement ps = conn.prepareStatement("select id, player_id, club_id, join_date, end_date ,player_club.number,season_id from player_club where player_id=?");
-                ){
+        ) {
             ps.setString(1, playerId);
-            try(ResultSet rs = ps.executeQuery();){
-                while(rs.next()){
+            try (ResultSet rs = ps.executeQuery();) {
+                while (rs.next()) {
                     playerClubs.add(playerClubMapper.apply(rs));
                 }
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return playerClubs;
@@ -39,50 +41,46 @@ public class PlayerClubCrudOperations {
 
     public List<PlayerClub> saveAll(List<PlayerClub> playerClubs) {
         List<PlayerClub> playerClubSaved = new ArrayList<>();
-        try(
+        try (
                 Connection conn = dataSource.getConnection();
                 PreparedStatement statement = conn.prepareStatement("INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number,season_id) VALUES (?,?,?,?,?,?,?) ON CONFLICT (number,club_id) " +
                         "DO UPDATE SET end_date=excluded.end_date RETURNING  id,number,end_date,club_id,player_id,join_date,season_id")
-                )
-        {
+        ) {
             playerClubs.forEach(playerClubToSave -> {
                 try {
-                   // System.out.println("player : "+playerClubToSave.getPlayer());
+                    // System.out.println("player : "+playerClubToSave.getPlayer());
                     LocalDate endDate = playerClubToSave.getEndDate();
-                statement.setString(1,playerClubToSave.getId());
-                statement.setString(2,playerClubToSave.getPlayer().getId());
-                statement.setString(3,playerClubToSave.getClub().getId());
-                statement.setDate(4, Date.valueOf(playerClubToSave.getJoinDate()));
-                statement.setString(7,playerClubToSave.getSeason().getId());
-                if(endDate != null){
-
-                statement.setDate(5,Date.valueOf(playerClubToSave.getEndDate()));
-                }
-                if (endDate == null) {
-
-                    statement.setDate(5,null);
-                }
-                statement.setInt(6,playerClubToSave.getNumber());
-
-                try(ResultSet rs = statement.executeQuery()){
-                    while(rs.next()){
-                        playerClubSaved.add(playerClubMapper.apply(rs));
+                    statement.setString(1, playerClubToSave.getId());
+                    statement.setString(2, playerClubToSave.getPlayer().getId());
+                    statement.setString(3, playerClubToSave.getClub().getId());
+                    statement.setDate(4, Date.valueOf(playerClubToSave.getJoinDate()));
+                    statement.setString(7, playerClubToSave.getSeason().getId());
+                    if (endDate != null) {
+                        statement.setDate(5, Date.valueOf(playerClubToSave.getEndDate()));
                     }
-                }catch (SQLException e){
-                    throw new RuntimeException(e);
-                }
+                    if (endDate == null) {
+                        statement.setDate(5, null);
+                    }
+                    statement.setInt(6, playerClubToSave.getNumber());
 
-                }catch (SQLException e){
+                    try (ResultSet rs = statement.executeQuery()) {
+                        while (rs.next()) {
+                            playerClubSaved.add(playerClubMapper.apply(rs));
+                        }
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
             });
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return playerClubSaved;
     }
-
 
 
 }
