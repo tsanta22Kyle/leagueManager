@@ -31,13 +31,12 @@ public class PlayerClubMapper implements Function<ResultSet, PlayerClub> {
             }
 
             String clubId = resultSet.getString("club_id");
-            String playerId = resultSet.getString("player_id");
             Club club = clubOperations.getById(clubId);
             playerClub.setClub(club);
             playerClub.setId(resultSet.getString("id"));
             playerClub.setJoinDate(resultSet.getDate("join_date").toLocalDate());
             playerClub.setNumber(resultSet.getInt("number"));
-          //  playerClub.setPlayer(playerCrudOperations.getById(playerId));
+            //playerClub.setSeason();
             return playerClub;
         }
         return null;

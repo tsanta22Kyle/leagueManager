@@ -14,6 +14,7 @@ $$;
 CREATE TABLE if not exists player(
     id varchar primary key ,
     name varchar(200) ,
+    preferred_number int,
     position positions ,
     country varchar ,
     age int

@@ -41,8 +41,8 @@ public class PlayerClubCrudOperations {
         List<PlayerClub> playerClubSaved = new ArrayList<>();
         try(
                 Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number) VALUES (?,?,?,?,?,?) ON CONFLICT (id) " +
-                        "DO UPDATE SET end_date=excluded.end_date,number=excluded.number RETURNING  id,number,end_date,club_id,player_id,join_date")
+                PreparedStatement statement = conn.prepareStatement("INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number) VALUES (?,?,?,?,?,?) ON CONFLICT (number,club_id) " +
+                        "DO UPDATE SET end_date=excluded.end_date RETURNING  id,number,end_date,club_id,player_id,join_date")
                 )
         {
             playerClubs.forEach(playerClubToSave -> {
@@ -81,5 +81,7 @@ public class PlayerClubCrudOperations {
         }
         return playerClubSaved;
     }
+
+
 
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 @AllArgsConstructor@NoArgsConstructor@Getter
@@ -14,6 +15,7 @@ public class Player {
     private Positions position;
     private String country;
     private int age;
+    private int preferredNumber;
     @JsonIgnore
     private List<PlayerClub> clubs = new ArrayList<PlayerClub>();
     @JsonProperty("club")
@@ -29,7 +31,14 @@ public class Player {
 
         return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getNumber();
         }
-        return 0;
+        return preferredNumber;
+    }
+    public PlayerClub endContract(){
+        if(clubs.size() > 0){
+            clubs.forEach(playerClub -> playerClub.setEndDate(LocalDate.now()));
+            return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0);
+        }
+        return null;
     }
 
     //

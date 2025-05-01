@@ -17,6 +17,7 @@ public class CreateOrUpdatePlayerMapper {
         player.setAge(createOrUpdatePlayerMapper.getAge());
         player.setId(createOrUpdatePlayerMapper.getId());
         player.setCountry(createOrUpdatePlayerMapper.getNationality());
+        player.setPreferredNumber(createOrUpdatePlayerMapper.getNumber());
         return player;
     }
     public CreateOrUpdatePlayer toRest(Player player) {
