@@ -46,6 +46,7 @@ public class PlayerService {
                 //System.out.println("existing player clubs are "+existingPlayer.getClubs());
                 List<PlayerClub> playerClubs = existingPlayer.getClubs();
             player.setClubs(playerClubs);
+            //player.getActualClub()
             return player;
             }
             return player;

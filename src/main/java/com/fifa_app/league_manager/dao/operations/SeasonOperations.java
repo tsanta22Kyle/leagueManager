@@ -91,4 +91,24 @@ public class SeasonOperations implements CrudOperations<Season> {
             }
         }
     }
+
+    public Season getById(String seasonId){
+        Season season = null;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select s.id, s.id, s.year, s.alias, s.status from season s where s.id=?")) {
+            /*
+            statement.setInt(1, pageSize);
+            statement.setInt(2, pageSize * (page - 1));
+             */
+            statement.setString(1, seasonId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    season =(seasonMapper.apply(resultSet));
+                }
+            }
+            return season;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
