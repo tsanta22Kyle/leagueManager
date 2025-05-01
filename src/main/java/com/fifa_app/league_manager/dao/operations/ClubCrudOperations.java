@@ -67,24 +67,8 @@ public class ClubCrudOperations implements CrudOperations<Club> {
         return club;
     }
 
-    @SneakyThrows
-    public List<Player> getActualPlayers(String clubId) {
-        List<Player> players = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select pl.id, pl.name, pl.country, pl.position, pl.number, pl.age"
-                     + " from player pl inner join player_club plc on plc.club_id = ?;")) {
-            statement.setString(1, clubId);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    //players.add(toBasicPlayer(resultSet));
-                }
-            }
-            return players;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     @SneakyThrows
     public List<Player> changePlayers(String clubId, List<Player> entities) {
@@ -103,7 +87,7 @@ public class ClubCrudOperations implements CrudOperations<Club> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                  //  players.add(toBasicPlayer(resultSet));
+                  // players.add(toBasicPlayer(resultSet));
                 }
             }
             throw new RuntimeException("Not finished!");

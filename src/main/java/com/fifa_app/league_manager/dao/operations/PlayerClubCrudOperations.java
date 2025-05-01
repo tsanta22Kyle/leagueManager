@@ -22,7 +22,7 @@ public class PlayerClubCrudOperations {
         List<PlayerClub> playerClubs = new ArrayList<PlayerClub>();
         try(
                 Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement("select id, player_id, club_id, join_date, end_date ,player_club.number from player_club where player_id=?");
+                PreparedStatement ps = conn.prepareStatement("select id, player_id, club_id, join_date, end_date ,player_club.number,season_id from player_club where player_id=?");
                 ){
             ps.setString(1, playerId);
             try(ResultSet rs = ps.executeQuery();){
@@ -41,8 +41,8 @@ public class PlayerClubCrudOperations {
         List<PlayerClub> playerClubSaved = new ArrayList<>();
         try(
                 Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number) VALUES (?,?,?,?,?,?) ON CONFLICT (id) " +
-                        "DO UPDATE SET end_date=excluded.end_date,number=excluded.number RETURNING  id,number,end_date,club_id,player_id,join_date")
+                PreparedStatement statement = conn.prepareStatement("INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number,season_id) VALUES (?,?,?,?,?,?,?) ON CONFLICT (number,club_id) " +
+                        "DO UPDATE SET end_date=excluded.end_date RETURNING  id,number,end_date,club_id,player_id,join_date,season_id")
                 )
         {
             playerClubs.forEach(playerClubToSave -> {
@@ -53,6 +53,7 @@ public class PlayerClubCrudOperations {
                 statement.setString(2,playerClubToSave.getPlayer().getId());
                 statement.setString(3,playerClubToSave.getClub().getId());
                 statement.setDate(4, Date.valueOf(playerClubToSave.getJoinDate()));
+                statement.setString(7,playerClubToSave.getSeason().getId());
                 if(endDate != null){
 
                 statement.setDate(5,Date.valueOf(playerClubToSave.getEndDate()));
@@ -81,5 +82,7 @@ public class PlayerClubCrudOperations {
         }
         return playerClubSaved;
     }
+
+
 
 }

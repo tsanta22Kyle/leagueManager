@@ -29,6 +29,7 @@ public class PlayerMapper implements Function<ResultSet, Player> {
         player.setCountry(resultSet.getString("country"));
         player.setPosition( Positions.valueOf(resultSet.getObject("position").toString()));
         player.setClubs(playerClubs);
+        player.setPreferredNumber(resultSet.getInt("preferred_number"));
 
         return player;
     }

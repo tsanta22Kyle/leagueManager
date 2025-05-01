@@ -1,7 +1,7 @@
 package com.fifa_app.league_manager.endpoint;
 
+import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
 import com.fifa_app.league_manager.model.Club;
-import com.fifa_app.league_manager.model.Player;
 import com.fifa_app.league_manager.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -26,7 +26,7 @@ public class ClubController {
     }
 
     @PutMapping("/{id}/players")
-    public Object changePlayers(@PathVariable String id, @RequestBody List<Player> entities) {
+    public Object changePlayers(@PathVariable String id, @RequestBody List<CreateOrUpdatePlayer> entities) {
         return clubService.changePlayers(id, entities);
     }
 

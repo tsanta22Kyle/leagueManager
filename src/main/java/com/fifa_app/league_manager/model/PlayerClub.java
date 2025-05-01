@@ -12,6 +12,7 @@ public class PlayerClub {
     private LocalDate joinDate;
     private LocalDate endDate;
     private int number;
+    private Season season;
     @JsonIgnore
     private Player player;
 }
