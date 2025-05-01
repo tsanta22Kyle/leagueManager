@@ -14,11 +14,12 @@ import java.util.List;
 public class PlayerController {
 
     private final PlayerService playerService;
+
     @GetMapping("")
     public Object getAllPlayers(
-            @RequestParam( required = false ,defaultValue = "") String name ,@RequestParam(required = false,defaultValue = "0") int ageMinimum,@RequestParam(required = false , defaultValue = "1000") int ageMaximum ,@RequestParam(required = false,defaultValue = "") String clubName
+            @RequestParam(required = false, defaultValue = "") String name, @RequestParam(required = false, defaultValue = "0") int ageMinimum, @RequestParam(required = false, defaultValue = "1000") int ageMaximum, @RequestParam(required = false, defaultValue = "") String clubName
     ) {
-       return playerService.getAllPlayers(name,ageMinimum,ageMaximum,clubName);
+        return playerService.getAllPlayers(name, ageMinimum, ageMaximum, clubName);
     }
 
     @PutMapping("")

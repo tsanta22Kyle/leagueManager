@@ -11,7 +11,7 @@ $$;
 
 CREATE TABLE IF NOT EXISTS season (
     id varchar not null primary key ,
-    year bigint,
+    year bigint unique,
     alias varchar,
     status season_status
 );

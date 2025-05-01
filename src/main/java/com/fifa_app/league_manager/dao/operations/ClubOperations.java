@@ -74,8 +74,8 @@ public class ClubOperations implements CrudOperations<Club> {
     public List<Player> getActualPlayers(String clubId) {
         List<Player> players = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select pl.id, pl.name, pl.country, pl.position, pl.number, pl.age" +
-                     " from player pl inner join player_club plc on plc.club_id = ?;")) {
+             PreparedStatement statement = connection.prepareStatement("select pl.id, pl.name, pl.country, pl.position, pl.number, pl.age"
+                     + " from player pl inner join player_club plc on plc.club_id = ?;")) {
             statement.setString(1, clubId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
