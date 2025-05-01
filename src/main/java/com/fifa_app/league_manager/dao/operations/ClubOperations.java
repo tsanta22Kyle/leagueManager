@@ -72,6 +72,7 @@ public class ClubOperations implements CrudOperations<Club> {
 
 
 
+
     @SneakyThrows
     public List<Player> changePlayers(String clubId, List<Player> entities) {
         List<Player> players = new ArrayList<>();

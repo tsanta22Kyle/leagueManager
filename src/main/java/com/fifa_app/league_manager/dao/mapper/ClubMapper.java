@@ -20,16 +20,11 @@ public class ClubMapper implements Function<ResultSet, Club> {
     @SneakyThrows
     public Club apply(ResultSet resultSet) {
         Club club = new Club();
-        // Coach coach = coachOperations.getCoachById(resultSet.getString("coach_id"));
         club.setId(resultSet.getString("id"));
         club.setName(resultSet.getString("name"));
         club.setYearCreation(resultSet.getLong("year_creation"));
         club.setAcronym(resultSet.getString("acronym"));
         club.setStadium(resultSet.getString("stadium"));
-        // club.setCoach(coach);
-
-
-        System.out.println("club"+club);
 
         return club;
     }

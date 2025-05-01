@@ -34,6 +34,4 @@ public class ClubController {
     public Object saveAll(@RequestBody() List<Club> entities){
         return clubService.saveAll(entities);
     }
-
-
 }
