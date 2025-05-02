@@ -2,7 +2,7 @@ package com.fifa_app.league_manager.service;
 
 import com.fifa_app.league_manager.dao.operations.SeasonCrudOperations;
 import com.fifa_app.league_manager.model.Season;
-import com.fifa_app.league_manager.model.SeasonStatus;
+import com.fifa_app.league_manager.model.Status;
 import com.fifa_app.league_manager.model.UpdateSeasonStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,8 +29,8 @@ public class SeasonService {
     public ResponseEntity<Object> updateStatus(long year, UpdateSeasonStatus entity) {
         List<Season> seasons = seasonCrudOperations.getAll();
         if (
-                seasons.stream().anyMatch(season -> season.getStatus().equals(SeasonStatus.STARTED)) &&
-                entity.getStatus().equals(SeasonStatus.STARTED)
+                seasons.stream().anyMatch(season -> season.getStatus().equals(Status.STARTED)) &&
+                entity.getStatus().equals(Status.STARTED)
         ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot START this season because another season is still ACTIVE.");
         }

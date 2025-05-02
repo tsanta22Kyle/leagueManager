@@ -1,6 +1,7 @@
 package com.fifa_app.league_manager.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.List;
@@ -18,8 +19,10 @@ public class Club {
     private long yearCreation;
     private String acronym;
     private String stadium;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Coach coach;
 
-    @JsonIgnore
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<ClubParticipation> clubParticipations;
 }

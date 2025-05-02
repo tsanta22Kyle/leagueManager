@@ -59,7 +59,6 @@ public class ClubCrudOperations implements CrudOperations<Club> {
 
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    //  System.out.println(rs.getString("name"));
                     club = clubMapper.apply(rs);
                 }
             }
@@ -74,7 +73,7 @@ public class ClubCrudOperations implements CrudOperations<Club> {
         List<Club> clubList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("insert into club (id, name, acronym, year_creation, stadium)"
-                     + " values (?, ?, ?, ?, ?) on conflict (name) do update set id=excluded.id ,name=excluded.name,"
+                     + " values (?, ?, ?, ?, ?) on conflict (name) do update set name=excluded.name,"
                      + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium"
                      + " returning id, name, stadium, year_creation, acronym")) {
 
@@ -109,6 +108,7 @@ public class ClubCrudOperations implements CrudOperations<Club> {
     }
 
     private void saveCoachAndClubCoach(Club entityToSave) {
+        System.out.println(entityToSave.getCoach());
         Coach coach = coachCrudOperations.save(entityToSave.getCoach());
 
         ClubCoach clubCoach = new ClubCoach();

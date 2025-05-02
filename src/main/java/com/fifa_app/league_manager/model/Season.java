@@ -13,5 +13,5 @@ public class Season {
     private String id;
     private long year;
     private String alias;
-    private SeasonStatus status;
+    private Status status;
 }

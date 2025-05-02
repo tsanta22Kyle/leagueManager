@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateSeasonStatus {
-    private SeasonStatus status;
+    private Status status;
 }

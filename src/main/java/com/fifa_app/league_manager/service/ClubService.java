@@ -2,7 +2,9 @@ package com.fifa_app.league_manager.service;
 
 
 import com.fifa_app.league_manager.dao.operations.*;
+import com.fifa_app.league_manager.endpoint.mapper.ClubRestMapper;
 import com.fifa_app.league_manager.endpoint.mapper.CreateOrUpdatePlayerMapper;
+import com.fifa_app.league_manager.endpoint.rest.ClubRest;
 import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
 import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +27,19 @@ public class ClubService {
     private final ClubCrudOperations clubCrudOperations;
     private final ClubParticipationCrudOperations clubParticipationCrudOperations;
     private final SeasonCrudOperations seasonCrudOperations;
+    private final ClubRestMapper clubRestMapper;
 
 
     public ResponseEntity<Object> getClubs() {
         List<Club> clubs = clubOperations.getAll();
-        return ResponseEntity.ok().body(clubs);
+        List<ClubRest> clubRests = clubs.stream().map(clubRestMapper::toRest).toList();
+        return ResponseEntity.ok().body(clubRests);
     }
 
     public ResponseEntity<Object> saveAll(List<Club> entities) {
         List<Club> clubs = clubOperations.saveAll(entities);
-        return ResponseEntity.ok().body(clubs);
+        List<ClubRest> clubRests = clubs.stream().map(clubRestMapper::toRest).toList();
+        return ResponseEntity.ok().body(clubRests);
     }
 
     public ResponseEntity<Object> getActualPlayers(String clubId) {

@@ -2,7 +2,7 @@ package com.fifa_app.league_manager.dao.mapper;
 
 
 import com.fifa_app.league_manager.model.Season;
-import com.fifa_app.league_manager.model.SeasonStatus;
+import com.fifa_app.league_manager.model.Status;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ public class SeasonMapper implements Function<ResultSet, Season> {
         season.setId(resultSet.getString("id"));
         season.setAlias(resultSet.getString("alias"));
         season.setYear(resultSet.getInt("year"));
-        season.setStatus(SeasonStatus.valueOf((String) resultSet.getObject("status")));
+        season.setStatus(Status.valueOf((String) resultSet.getObject("status")));
 
         return season;
     }

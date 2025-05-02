@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class CoachCrudOperations implements CrudOperations<Coach> {
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement =
                          connection.prepareStatement("insert into coach (id, name, country) values (?, ?, ?)"
-                                 + " on conflict (id, name) do nothing"
+                                 + " on conflict (name) do nothing"
                                  + " returning id, name, country")) {
                 entities.forEach(entityToSave -> {
                     try {
@@ -80,7 +81,8 @@ public class CoachCrudOperations implements CrudOperations<Coach> {
                                  + " on conflict (name) do update set name=excluded.name"
                                  + " returning id, name, country")) {
                 try {
-                    statement.setString(1, entity.getId());
+                    String id = entity.getId() != null ? entity.getId() : UUID.randomUUID().toString();
+                    statement.setString(1, id);
                     statement.setString(2, entity.getName());
                     statement.setString(3, entity.getCountry());
 

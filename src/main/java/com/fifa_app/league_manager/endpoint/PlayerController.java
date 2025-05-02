@@ -1,7 +1,6 @@
 package com.fifa_app.league_manager.endpoint;
 
 import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
-import com.fifa_app.league_manager.model.Player;
 import com.fifa_app.league_manager.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

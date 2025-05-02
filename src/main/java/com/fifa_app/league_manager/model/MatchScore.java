@@ -1,18 +1,17 @@
 package com.fifa_app.league_manager.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Getter
 @Data
+@Setter
 @EqualsAndHashCode
 @ToString
-public class Coach {
-    @JsonIgnore
+public class MatchScore {
     private String id;
-    private String name;
-    private String country;
+    private int home;
+    private int away;
+
+    private Match match;
 }

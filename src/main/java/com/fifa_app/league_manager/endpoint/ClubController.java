@@ -5,12 +5,11 @@ import com.fifa_app.league_manager.model.Club;
 import com.fifa_app.league_manager.model.Player;
 import com.fifa_app.league_manager.service.ClubService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/clubs")
 public class ClubController {
