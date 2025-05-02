@@ -1,7 +1,9 @@
 package com.fifa_app.league_manager.dao.mapper;
 
 import com.fifa_app.league_manager.dao.operations.ClubCrudOperations;
+import com.fifa_app.league_manager.dao.operations.ClubMatchCrudOperations;
 import com.fifa_app.league_manager.model.Club;
+import com.fifa_app.league_manager.model.ClubMatch;
 import com.fifa_app.league_manager.model.Match;
 import com.fifa_app.league_manager.model.Status;
 import lombok.RequiredArgsConstructor;
@@ -14,15 +16,15 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public class MatchMapper implements Function<ResultSet, Match> {
-    private final ClubCrudOperations clubCrudOperations;
+    private final ClubMatchCrudOperations clubMatchCrudOperations;
 
     @Override
     @SneakyThrows
     public Match apply(ResultSet resultSet) {
         Match match = new Match();
 
-        Club homeClub = clubCrudOperations.getById(resultSet.getString("club_playing_home_id"));
-        Club awayClub = clubCrudOperations.getById(resultSet.getString("club_playing_away_id"));
+        ClubMatch homeClub = clubMatchCrudOperations.getById(resultSet.getString("club_playing_home_id"));
+        ClubMatch awayClub = clubMatchCrudOperations.getById(resultSet.getString("club_playing_away_id"));
 
         match.setId(resultSet.getString("id"));
         match.setStadium(resultSet.getString("stadium"));

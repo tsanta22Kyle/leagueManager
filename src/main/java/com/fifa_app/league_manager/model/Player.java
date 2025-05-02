@@ -21,6 +21,7 @@ public class Player {
     private int preferredNumber;
     @JsonIgnore
     private List<PlayerClub> clubs = new ArrayList<PlayerClub>();
+    private List<PlayerMatch> matches = new ArrayList<>();
 
     @JsonProperty("club")
     public Club getActualClub() {

@@ -13,8 +13,8 @@ import java.time.Instant;
 @ToString
 public class Match {
     private String id;
-    private Club clubPlayingHome;
-    private Club clubPlayingAway;
+    private ClubMatch clubPlayingHome;
+    private ClubMatch clubPlayingAway;
     private String stadium;
     private Instant matchDatetime;
     private Status actualStatus;

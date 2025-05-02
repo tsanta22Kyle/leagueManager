@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -42,5 +43,16 @@ public class MatchCrudOperations implements CrudOperations<Match> {
             throw new RuntimeException(e);
         }
         return match;
+    }
+
+    @SneakyThrows
+    public List<Match> saveAll(List<Match> matches) {
+        List<Match> savedMatches = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+        PreparedStatement statement = conn.prepareStatement("INSERT INTO match (id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status) VALUES (?,?,?,?,?) ON CONFLICT ");
+        ){
+
+        }
+        return savedMatches;
     }
 }

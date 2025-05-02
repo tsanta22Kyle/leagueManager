@@ -17,5 +17,13 @@ CREATE TABLE if not exists match(
     club_playing_home_id varchar ,
     club_playing_away_id varchar,
     match_datetime timestamp,
-    actual_status match_status
-)
+    actual_status match_status,
+    CONSTRAINT fk_home_club
+        FOREIGN KEY (club_playing_home_id)
+            REFERENCES club_match(id),
+    CONSTRAINT fk_away_club
+        FOREIGN KEY (club_playing_away_id)
+            REFERENCES club_match(id),
+    CONSTRAINT check_clubs_differents
+        CHECK (club_playing_home_id IS DISTINCT FROM club_playing_away_id)
+);

@@ -8,10 +8,10 @@ import lombok.*;
 @Setter
 @EqualsAndHashCode
 @ToString
-public class MatchScore {
+public class Goal {
     private String id;
-    private int home;
-    private int away;
-
-    private Match match;
+    private PlayerMatch playerMatch;
+    private boolean ownGoal;
+    private int minuteOfGoal;
+    private ClubMatch clubMatch;
 }
