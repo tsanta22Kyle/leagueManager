@@ -180,7 +180,7 @@ public class ClubService {
         if (existingClub == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, ID = " + clubId + " does not exist.");
         }
-        ClubParticipation existingClubParticipation = clubParticipationCrudOperations.getByClubId(existingClub.getId()).get(0);
+        ClubParticipation existingClubParticipation = clubParticipationCrudOperations.getManyByClubId(existingClub.getId()).get(0);
 
         for (Player player : entities) {
             Player foundPlayer = playerCrudOperations.getById(player.getId());

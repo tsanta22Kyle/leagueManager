@@ -45,7 +45,7 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
         }
     }
 
-    public List<ClubParticipation> getByClubId(String clubId) {
+    public List<ClubParticipation> getManyByClubId(String clubId) {
         List<ClubParticipation> clubParticipations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("select cp.id, cp.club_id, cp.season_id" +

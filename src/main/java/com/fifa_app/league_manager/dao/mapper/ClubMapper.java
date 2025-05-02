@@ -24,7 +24,7 @@ public class ClubMapper implements Function<ResultSet, Club> {
     public Club apply(ResultSet resultSet) {
         Club club = new Club();
         String clubId = resultSet.getString("id");
-        List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getByClubId(clubId);
+        List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(clubId);
         club.setId(clubId);
         club.setName(resultSet.getString("name"));
         club.setYearCreation(resultSet.getLong("year_creation"));
