@@ -2,18 +2,16 @@ package com.fifa_app.league_manager.model;
 
 import lombok.*;
 
-import java.time.Year;
-
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Getter
+@Data
 @Setter
 @EqualsAndHashCode
 @ToString
-public class Season {
+public class PlayerMatch {
     private String id;
-    private Year year;
-    private String alias;
-    private Status status;
+
+    private Player player;
+    private Match match;
+    private PlayingTime playingTime;
 }

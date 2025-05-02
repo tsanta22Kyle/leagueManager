@@ -45,7 +45,6 @@ public class Player {
     public int getActualNumber(){
         if (clubs.size() > 0){
 
-        return clubs.stream().filter(playerClub -> playerClub.getEndDate() == null).toList().get(0).getNumber();
         }
         return preferredNumber;
     }

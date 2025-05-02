@@ -2,14 +2,14 @@ package com.fifa_app.league_manager.endpoint;
 
 import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
 import com.fifa_app.league_manager.model.Club;
+import com.fifa_app.league_manager.model.Player;
 import com.fifa_app.league_manager.service.ClubService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/clubs")
 public class ClubController {
@@ -33,5 +33,10 @@ public class ClubController {
     @PutMapping("")
     public Object saveAll(@RequestBody() List<Club> entities){
         return clubService.saveAll(entities);
+    }
+
+    @PostMapping("/{id}/players")
+    public Object attachPlayersToAClub(@PathVariable String id, @RequestBody List<Player> entities) {
+        return clubService.attachPlayersToAClub(id, entities);
     }
 }

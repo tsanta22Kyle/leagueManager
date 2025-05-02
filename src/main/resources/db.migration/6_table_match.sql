@@ -13,6 +13,7 @@ $$;
 
 CREATE TABLE if not exists match(
     id varchar primary key ,
+    stadium varchar ,
     club_playing_home_id varchar ,
     club_playing_away_id varchar,
     match_datetime timestamp,

@@ -13,25 +13,28 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-@Repository@RequiredArgsConstructor
+
+@Repository
+@RequiredArgsConstructor
 public class PlayerClubCrudOperations {
 
     private final PlayerClubMapper playerClubMapper;
     private final DataSource dataSource;
 
     public List<PlayerClub> getPlayerClubsByPlayerId(String playerId) {
-        List<PlayerClub> playerClubs = new ArrayList<PlayerClub>();
-        try(
+        List<PlayerClub> playerClubs = new ArrayList<>();
+        try (
                 Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement("select id, player_id, club_id, join_date, end_date ,player_club.number,season_id from player_club where player_id=? ");
-                ){
+                PreparedStatement ps = conn.prepareStatement("select id, player_id, club_id, join_date, end_date ,player_club.number,season_id from player_club where player_id=?");
+        ) {
+
             ps.setString(1, playerId);
-            try(ResultSet rs = ps.executeQuery();){
-                while(rs.next()){
+            try (ResultSet rs = ps.executeQuery();) {
+                while (rs.next()) {
                     playerClubs.add(playerClubMapper.apply(rs));
                 }
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return playerClubs;
@@ -40,8 +43,9 @@ public class PlayerClubCrudOperations {
 
     public List<PlayerClub> saveAll(List<PlayerClub> playerClubs) {
         List<PlayerClub> playerClubSaved = new ArrayList<>();
-        try(
+        try (
                 Connection conn = dataSource.getConnection();
+
                 PreparedStatement statement = conn.prepareStatement("INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number,season_id) VALUES (?,?,?,?,?,?,?)" +
                         " ON CONFLICT (id) " +
                         "DO UPDATE SET end_date=excluded.end_date,season_id=excluded.season_id RETURNING  id,number,end_date,club_id,player_id,join_date,season_id")
@@ -91,7 +95,6 @@ public class PlayerClubCrudOperations {
         }
         return playerClubSaved;
     }
-
 
 
 }

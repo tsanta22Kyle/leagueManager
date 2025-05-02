@@ -3,6 +3,7 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.PlayerMapper;
 import com.fifa_app.league_manager.model.Club;
+import com.fifa_app.league_manager.model.ClubCoach;
 import com.fifa_app.league_manager.model.Coach;
 import com.fifa_app.league_manager.model.Player;
 import lombok.RequiredArgsConstructor;

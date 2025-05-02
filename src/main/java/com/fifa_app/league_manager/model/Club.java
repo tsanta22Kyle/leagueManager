@@ -1,6 +1,7 @@
 package com.fifa_app.league_manager.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ public class Club {
     private long yearCreation;
     private String acronym;
     private String stadium;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Coach coach;
 
     @JsonIgnore
@@ -32,10 +35,12 @@ public class Club {
         Optional<ClubParticipation> actualPreSeason = seasonsParticipation.stream().min((o1, o2) -> o1.getSeason().getYear().compareTo(o2.getSeason().getYear())).stream().findFirst();
         ClubParticipation activeSeason = seasonsParticipation
                 .stream()
-                .filter(season -> season.getSeason().getStatus() == SeasonStatus.STARTED)
+                .filter(season -> season.getSeason().getStatus() == Status.STARTED)
                 .findFirst()
                 .orElse(actualPreSeason.orElse(null));
     if (activeSeason == null) return null;
         return activeSeason.getSeason();
     }
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<ClubParticipation> clubParticipations;
 }

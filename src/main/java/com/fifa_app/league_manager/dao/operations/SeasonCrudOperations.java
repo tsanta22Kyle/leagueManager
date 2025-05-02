@@ -53,7 +53,8 @@ public class SeasonCrudOperations implements CrudOperations<Season> {
                         statement.setString(1, UUID.randomUUID().toString());
                         statement.setString(2, entityToSave.getAlias());
                         statement.setLong(3, entityToSave.getYear().getValue());
-                        statement.setString(4, SeasonStatus.NOT_STARTED.name());
+
+                        statement.setString(4, Status.NOT_STARTED.name());
 
                         statement.addBatch();
                     } catch (SQLException e) {

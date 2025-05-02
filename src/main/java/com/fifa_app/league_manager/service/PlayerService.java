@@ -1,24 +1,31 @@
 package com.fifa_app.league_manager.service;
 
-import com.fifa_app.league_manager.dao.operations.PlayerCrudOperations;
+import com.fifa_app.league_manager.dao.operations.*;
 import com.fifa_app.league_manager.endpoint.mapper.CreateOrUpdatePlayerMapper;
 import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
-import com.fifa_app.league_manager.model.Player;
-import com.fifa_app.league_manager.model.PlayerClub;
+import com.fifa_app.league_manager.model.*;
 import com.fifa_app.league_manager.service.exceptions.ClientException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service@RequiredArgsConstructor
 public class PlayerService {
 
     private final PlayerCrudOperations playerCrudOperations;
     private final CreateOrUpdatePlayerMapper createOrUpdatePlayerMapper;
+    private final ClubCrudOperations clubCrudOperations;
+    private final PlayerClubCrudOperations playerClubCrudOperations;
+    private final ClubParticipationCrudOperations clubParticipationCrudOperations;
+    private final SeasonCrudOperations seasonCrudOperations;
 
     public ResponseEntity<Object> getAllPlayers(String name,int ageMin,int ageMax,String clubName){
         try {

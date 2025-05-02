@@ -1,6 +1,5 @@
 package com.fifa_app.league_manager.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
