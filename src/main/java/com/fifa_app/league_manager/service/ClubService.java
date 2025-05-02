@@ -8,12 +8,21 @@ import com.fifa_app.league_manager.endpoint.mapper.CreateOrUpdatePlayerMapper;
 import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
 import com.fifa_app.league_manager.model.Club;
 import com.fifa_app.league_manager.model.Player;
+import com.fifa_app.league_manager.model.PlayerClub;
+import com.fifa_app.league_manager.model.SeasonStatus;
+import com.fifa_app.league_manager.service.exceptions.ClientException;
+import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -45,17 +54,116 @@ public class ClubService {
     }
 
     public ResponseEntity<Object> changePlayers(String clubId, List<CreateOrUpdatePlayer> playersToSave) {
-        Club existingClub = clubOperations.getById(clubId);
-        if (existingClub == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, id = " + clubId + " does not exist.");
+        try {
+
+
+            Club existingClub = clubOperations.getById(clubId);
+            if (existingClub == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, id = " + clubId + " does not exist.");
+            }
+            List<Player> formerPlayers = playerCrudOperations.getActualPlayersByClubId(clubId);
+            List<Player> newPlayers = playersToSave.stream().map(createOrUpdatePlayerMapper::toModel).toList();
+            List<Player> existingPlayers = new ArrayList<>();
+            List<Player> underContractPlayers = new ArrayList<>();
+            List<Player> playersToCreate = new ArrayList<>();
+            newPlayers.stream().forEach(player -> {
+                Player existingPlayer = playerCrudOperations.getById(player.getId());
+                if(existingPlayer == null){
+                    playersToCreate.add(player);
+                }else {
+
+                existingPlayers.add(existingPlayer);
+                }
+            });
+            if (!existingPlayers.isEmpty()) {
+                underContractPlayers.addAll(
+                        existingPlayers.stream()
+                                .filter(Objects::nonNull)
+                                .filter(player -> player.getActualClub() != null)
+
+                                .filter(player -> player.getActualClub().getActiveSeason() != null)
+                                .filter(player -> player.getActualClub().getActiveSeason().getStatus() == SeasonStatus.STARTED).toList()
+                );
+            }
+            if (underContractPlayers.size() > 0) {
+                return ResponseEntity.badRequest().body("there are players under contract : " + underContractPlayers);
+            }
+            if (
+                    existingClub.getActiveSeason() != null && existingClub.getActiveSeason().getStatus() == SeasonStatus.STARTED
+            ) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Season already started");
+            } else {
+                List<PlayerClub> endContractsToSave = new ArrayList<>();
+                existingPlayers.stream()
+
+                        .filter(player -> player.getActualClub() != null)
+                        .filter(player -> player!=null)
+                        .filter(player -> player.getClubs().stream().filter(playerClub -> playerClub.getClub() == existingClub).toList().size()==0)
+                        .filter(player -> player.getActualClub() != existingClub)
+                        .forEach(player -> {
+                            PlayerClub endContract = new PlayerClub();
+                            if(player.getClubs().isEmpty()){
+                                endContract.setClub(existingClub);
+
+                                endContract.setId(UUID.randomUUID().toString());
+                            }if (!player.getClubs().isEmpty()){
+
+                            endContract.setClub(player.getActualClub());
+                            endContract.setId(player.endContract().getId());
+                            }
+                            endContract.setPlayer(player);
+                            endContract.setEndDate(LocalDate.now());
+                            endContract.setNumber(player.getPreferredNumber());
+                            endContract.setSeason(existingClub.getActiveSeason());
+                            System.out.println("active season : "+existingClub.getActiveSeason());
+                            endContract.setJoinDate(LocalDate.now());
+
+                            playerClubCrudOperations.saveAll(List.of(endContract));
+                        });
+                formerPlayers.forEach(player -> {
+
+                    PlayerClub endContract = new PlayerClub();
+                    if(player.getClubs().isEmpty()){
+                        endContract.setClub(existingClub);
+
+                        endContract.setId(UUID.randomUUID().toString());
+                    }if (!player.getClubs().isEmpty()){
+
+                        endContract.setClub(player.getActualClub());
+                        endContract.setId(player.endContract().getId());
+                    }
+                    endContract.setPlayer(player);
+                    endContract.setEndDate(LocalDate.now());
+                    endContract.setNumber(player.getPreferredNumber());
+                    endContract.setSeason(existingClub.getActiveSeason());
+                    endContract.setJoinDate(LocalDate.now());
+
+                    playerClubCrudOperations.saveAll(List.of(endContract));
+                });
+
+                List<PlayerClub> newContractsToAdd = new ArrayList<>();
+                newPlayers.forEach(player -> {
+                    PlayerClub newContract = new PlayerClub();
+                    newContract.setPlayer(player);
+                    newContract.setId(UUID.randomUUID().toString());
+                    newContract.setClub(existingClub);
+                    newContract.setSeason(existingClub.getActiveSeason());
+                    newContract.setNumber(player.getPreferredNumber());
+                    newContract.setEndDate(null);
+                    newContract.setJoinDate(LocalDate.now());
+                    newContractsToAdd.add(newContract);
+                });
+                playerCrudOperations.saveAll(playersToCreate);
+               // playerClubCrudOperations.saveAll(endContractsToSave);
+                playerClubCrudOperations.saveAll(newContractsToAdd);
+            }
+            //  List<Player> players = clubOperations.changePlayers(clubId, entities);
+            List<CreateOrUpdatePlayer> updatedPlayers = playerCrudOperations.saveAll(newPlayers).stream().map(player -> createOrUpdatePlayerMapper.toRest(player)).toList();
+            // return ResponseEntity.ok().body(players);
+            return ResponseEntity.ok(updatedPlayers);
+        }catch (ServerException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        List<Player> formerPlayers = playerCrudOperations.getActualPlayersByClubId(clubId);
-        List<Player> newPlayers = playersToSave.stream().map(createOrUpdatePlayerMapper::toModel).toList();
-        formerPlayers.forEach(player -> {
-        //    playerClubCrudOperations.saveAll()
-        });
-        //  List<Player> players = clubOperations.changePlayers(clubId, entities);
-       // return ResponseEntity.ok().body(players);
-        return null;
     }
+
 }

@@ -45,8 +45,8 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
         }
     }
 
-    public ClubParticipation getByClubId(String clubId) {
-        ClubParticipation clubParticipation = new ClubParticipation();
+    public List<ClubParticipation> getByClubId(String clubId) {
+        List<ClubParticipation> clubParticipations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("select cp.id, cp.club_id, cp.season_id" +
                      " from club_participation cp where cp.club_id = ?;")) {
@@ -54,11 +54,11 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
             statement.setString(1, clubId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    clubParticipation = clubParticipationMapper.apply(resultSet);
+                while (resultSet.next()) {
+                    clubParticipations.add(clubParticipationMapper.apply(resultSet));
                 }
             }
-            return clubParticipation;
+            return clubParticipations;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -23,6 +23,7 @@ public class PlayerMapper implements Function<ResultSet, Player> {
         Player player = new Player();
         String playerId = resultSet.getString("id");
         List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+       // System.out.println("playerClubs: " + playerClubs);
         player.setId(playerId);
         player.setName(resultSet.getString("name"));
         player.setAge(resultSet.getInt("age"));

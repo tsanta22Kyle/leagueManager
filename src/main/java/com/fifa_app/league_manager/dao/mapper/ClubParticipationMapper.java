@@ -17,19 +17,19 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class ClubParticipationMapper implements Function<ResultSet, ClubParticipation> {
 
-    private final ClubCrudOperations clubCrudOperations;
+    //private final ClubCrudOperations clubCrudOperations;
     private final SeasonCrudOperations seasonCrudOperations;
 
     @Override
     @SneakyThrows
     public ClubParticipation apply(ResultSet resultSet) {
-        Club club = clubCrudOperations.getById(resultSet.getString("club_id"));
+      //  Club club = clubCrudOperations.getById(resultSet.getString("club_id"));
         Season season = seasonCrudOperations.getById(resultSet.getString("season_id"));
 
         ClubParticipation clubParticipation = new ClubParticipation();
 
         clubParticipation.setId(resultSet.getString("id"));
-        clubParticipation.setClub(club);
+      //  clubParticipation.setClub(club);
         clubParticipation.setSeason(season);
 
         return clubParticipation;

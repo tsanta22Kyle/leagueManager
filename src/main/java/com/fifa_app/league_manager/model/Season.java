@@ -2,6 +2,8 @@ package com.fifa_app.league_manager.model;
 
 import lombok.*;
 
+import java.time.Year;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -11,7 +13,7 @@ import lombok.*;
 @ToString
 public class Season {
     private String id;
-    private long year;
+    private Year year;
     private String alias;
     private SeasonStatus status;
 }

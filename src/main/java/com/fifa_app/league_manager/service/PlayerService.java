@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +28,15 @@ public class PlayerService {
                 throw new ClientException("minimum age is greater than maximum age");
             }
         List<Player> players = playerCrudOperations.getAll();
+            System.out.println("players: " + players);
         List<Player> filteredPlayers = players.stream()
+                .filter(player -> player.getActualClub()!=null)
                 .filter(player -> player.getActualClub().getName().toLowerCase().contains(clubName.toLowerCase()))
                 .filter(player -> player.getAge()>ageMin).filter(player -> player.getAge()<ageMax)
                 .filter(player -> player.getName().toLowerCase().contains(name.toLowerCase())).toList();
         return ResponseEntity.ok(filteredPlayers);
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw new RuntimeException(e);
         }
 
     }
@@ -46,7 +49,6 @@ public class PlayerService {
                 //System.out.println("existing player clubs are "+existingPlayer.getClubs());
                 List<PlayerClub> playerClubs = existingPlayer.getClubs();
             player.setClubs(playerClubs);
-            //player.getActualClub()
             return player;
             }
             return player;

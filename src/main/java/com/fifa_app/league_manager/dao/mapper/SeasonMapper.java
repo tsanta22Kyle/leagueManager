@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
+import java.time.Year;
 import java.util.function.Function;
 
 @Component
@@ -20,7 +21,7 @@ public class SeasonMapper implements Function<ResultSet, Season> {
 
         season.setId(resultSet.getString("id"));
         season.setAlias(resultSet.getString("alias"));
-        season.setYear(resultSet.getInt("year"));
+        season.setYear(Year.of(resultSet.getInt("year")));
         season.setStatus(SeasonStatus.valueOf((String) resultSet.getObject("status")));
 
         return season;

@@ -28,7 +28,7 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
 
         List<Player> players = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select id, name, position, country, age from player ")) {
+             PreparedStatement statement = connection.prepareStatement("select id, name, position, country, age,preferred_number from player ")) {
             /*
             statement.setInt(1, pageSize);
             statement.setInt(2, pageSize * (page - 1));
@@ -72,7 +72,7 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
         List<Player> players = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("select pl.id, pl.name, pl.country, pl.position, pl.preferred_number, pl.age" +
-                     " from player pl inner join player_club plc on plc.club_id = ? WHERE plc.end_date=null")) {
+                     " from player pl inner join player_club plc on pl.id = plc.player_id WHERE plc.club_id = ? AND end_date is null")) {
             statement.setString(1, clubId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -104,7 +104,10 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                     statement.setInt(5, playerToSave.getAge());
                     statement.setInt(6, playerToSave.getPreferredNumber());
                     // System.out.println("clubs : "+playerToSave.getClubs());
-                    playerToSave.getClubs().forEach(playerClub -> playerClub.setPlayer(playerToSave));
+                    playerToSave.getClubs().forEach(playerClub -> {
+                        playerClub.setPlayer(playerToSave);
+                    } );
+
                     playerClubCrudOperations.saveAll(playerToSave.getClubs());
                     try (ResultSet resultSet = statement.executeQuery()) {
                         while (resultSet.next()) {
@@ -122,7 +125,6 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
         return savedPlayers;
     }
 
-    //public List<Player> removePlayersFromClub(){
 
-    // }
+
 }

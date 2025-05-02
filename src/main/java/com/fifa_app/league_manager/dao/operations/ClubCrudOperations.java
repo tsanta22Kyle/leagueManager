@@ -51,7 +51,7 @@ public class ClubCrudOperations implements CrudOperations<Club> {
     public Club getById(String clubId) {
         Club club = null;
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement statement = conn.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id " +
+             PreparedStatement statement = conn.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id  " +
                      "from club c inner join club_coach cc on cc.team_id = c.id WHERE c.id=?")) {
             statement.setString(1, clubId);
 
