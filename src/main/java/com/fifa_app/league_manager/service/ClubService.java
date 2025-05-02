@@ -63,7 +63,7 @@ public class ClubService {
     }
 
     public ResponseEntity<Object> attachPlayersToAClub(String clubId, List<Player> entities) {
-        List<Player> players = new ArrayList<>();
+        List<CreateOrUpdatePlayer> players = new ArrayList<>();
 
         Club existingClub = clubCrudOperations.getById(clubId);
         if (existingClub == null) {
@@ -95,9 +95,10 @@ public class ClubService {
             playerClub.setPlayer(newPlayer);
             playerClub.setJoinDate(LocalDate.now());
 
-            playerClubCrudOperations.saveAll(List.of(playerClub));
+            List<PlayerClub> clubs = playerClubCrudOperations.saveAll(List.of(playerClub));
+            newPlayer.setClubs(clubs);
 
-            players.add(newPlayer);
+            players.add(createOrUpdatePlayerMapper.toRest(newPlayer));
         }
 
 
