@@ -30,7 +30,7 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
     public List<ClubParticipation> getAll() {
         List<ClubParticipation> clubParticipations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select id, club_id, season_id, points, wins, draws, losses, goals_scored, goals_conceded, clean_sheets" +
+             PreparedStatement statement = connection.prepareStatement("select id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets" +
                      " from club_participation;")) {
             /*
             statement.setInt(1, pageSize);
@@ -50,7 +50,7 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
     public List<ClubParticipation> getManyByClubId(String clubId) {
         List<ClubParticipation> clubParticipations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select id, club_id, season_id, points, wins, draws, losses, goals_scored, goals_conceded, goals_conceded, clean_sheets" +
+             PreparedStatement statement = connection.prepareStatement("select id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets" +
                      " from club_participation cp where cp.club_id = ?;")) {
 
             statement.setString(1, clubId);
@@ -92,10 +92,10 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
     public List<ClubParticipation> saveAll(List<ClubParticipation> entities) {
         List<ClubParticipation> clubParticipations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("insert into club_participation (id, club_id, season_id, points, wins, draws, losses, goals_scored, goals_conceded, clean_sheets)"
+            try (PreparedStatement statement = connection.prepareStatement("insert into club_participation (id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets)"
                     + " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    + " on conflict (id) do nothing"
-                    + " returning id, club_id, season_id, points, wins, draws, losses, goals_scored, goals_conceded, clean_sheets")) {
+                    + " on conflict (id) do update set conceded_goals=excluded.conceded_goals,scored_goals=excluded.scored_goals,clean_sheets=excluded.clean_sheets,draws=excluded.draws,wins=excluded.wins,losses=excluded.losses,points=excluded.points"
+                    + " returning id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets")) {
                 entities.forEach(entityToSave -> {
                     try {
                         String id = entityToSave.getId() == null ? UUID.randomUUID().toString() : entityToSave.getId();
@@ -109,17 +109,17 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
                         statement.setInt(8, entityToSave.getScoredGoals());
                         statement.setInt(9, entityToSave.getConcededGoals());
                         statement.setInt(10, entityToSave.getCleanSheetNumber());
+                        try (ResultSet resultSet = statement.executeQuery()) {
+                            while (resultSet.next()) {
+                                clubParticipations.add(clubParticipationMapper.apply(resultSet));
+                            }
+                        }
 
-                        statement.addBatch();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                 });
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        clubParticipations.add(clubParticipationMapper.apply(resultSet));
-                    }
-                }
+
                 return clubParticipations;
             }
         }
@@ -129,10 +129,10 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
     public ClubParticipation save(ClubParticipation entity) {
         ClubParticipation clubParticipation = null;
         try (Connection connection = dataSource.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("insert into club_participation (id, club_id, season_id, points, wins, draws, losses, goals_scored, goals_conceded, clean_sheets)"
+            try (PreparedStatement statement = connection.prepareStatement("insert into club_participation (id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets)"
                     + " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " on conflict (id) do nothing"
-                    + " returning id, club_id, season_id, points, wins, draws, losses, goals_scored, goals_conceded, clean_sheets")) {
+                    + " returning id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets")) {
                 try {
                     String id = entity.getId() == null ? UUID.randomUUID().toString() : entity.getId();
                     statement.setString(1, id);
@@ -156,5 +156,44 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
                 return clubParticipation;
             }
         }
+    }
+
+    public ClubParticipation getById(String id) {
+        ClubParticipation clubParticipation = null;
+        try(
+                Connection conn = dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets FROM club_participation where id=?")
+                )
+        {
+            ps.setString(1, id);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                if (resultSet.next()) {
+                    clubParticipation = clubParticipationMapper.apply(resultSet);
+                }
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return clubParticipation;
+    }
+
+    public ClubParticipation getBySeasonIdAndClubId(String seasonId, String clubId) {
+        ClubParticipation clubParticipation = null;
+        try(
+                Connection conn = dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets FROM club_participation where season_id=? and club_id=?")
+        )
+        {
+            ps.setString(1, seasonId);
+            ps.setString(2, clubId);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                if (resultSet.next()) {
+                    clubParticipation = clubParticipationMapper.apply(resultSet);
+                }
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return clubParticipation;
     }
 }

@@ -1,11 +1,10 @@
 package com.fifa_app.league_manager.service;
 
-import com.fifa_app.league_manager.dao.operations.ClubMatchCrudOperations;
-import com.fifa_app.league_manager.dao.operations.ClubParticipationCrudOperations;
-import com.fifa_app.league_manager.dao.operations.MatchCrudOperations;
-import com.fifa_app.league_manager.dao.operations.SeasonCrudOperations;
+import com.fifa_app.league_manager.dao.operations.*;
 import com.fifa_app.league_manager.endpoint.mapper.MatchRestMapper;
+import com.fifa_app.league_manager.endpoint.rest.CreateGoal;
 import com.fifa_app.league_manager.endpoint.rest.MatchRest;
+import com.fifa_app.league_manager.endpoint.rest.UpdateStatus;
 import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +28,7 @@ public class MatchService {
     private final ClubParticipationCrudOperations clubParticipationCrudOperations;
     private final ClubMatchCrudOperations clubMatchCrudOperations;
     private final MatchRestMapper matchRestMapper;
+    private final ClubCrudOperations clubCrudOperations;
 
     public ResponseEntity<Object> createAllMatches(Year seasonYear) {
         Season season = seasonCrudOperations.getByYear(seasonYear);
@@ -106,11 +106,10 @@ public class MatchService {
             match.setClubPlayingAway(awayClubMatchMap.get(match.getId()));
         }
 
-       List<Match> savedMatches = matchCrudOperations.saveAll(matchesToCreate);
+        List<Match> savedMatches = matchCrudOperations.saveAll(matchesToCreate);
         List<MatchRest> restMatches = savedMatches.stream().map(match -> matchRestMapper.toRest(match)).toList();
         return ResponseEntity.ok(restMatches);
     }
-
 
 
     public void assignConsecutiveDates(List<Match> matches, Instant startDate) {
@@ -119,20 +118,135 @@ public class MatchService {
         }
     }
 
-    public Object getAllSeasonsMatches(Year seasonYear, Status matchStatus, String clubPlayingName, LocalDate matchAfter,LocalDate matchBeforeOrEquals) {
+    public ResponseEntity<Object> getAllSeasonsMatches(Year seasonYear, Status matchStatus, String clubPlayingName, LocalDate matchAfter, LocalDate matchBeforeOrEquals) {
 
         Season season = seasonCrudOperations.getByYear(seasonYear);
 
-        if(season == null){
+        if (season == null) {
             return ResponseEntity.status(NOT_FOUND).body("Season not found");
         }
 
         List<MatchRest> matches = matchCrudOperations.getBySeasonId(season.getId()).stream().map(match -> matchRestMapper.toRest(match)).toList();
 
-     List<MatchRest> filteredMatches =    matches.stream().filter(match -> match.getActualStatus() == matchStatus)
-                .filter(match ->( match.getClubPlayingHome().getName()+match.getClubPlayingAway().getName()).contains(clubPlayingName))
-                .filter(matchRest -> LocalDate.ofInstant(matchRest.getMatchDateTime(),ZoneId.systemDefault()).isAfter(matchAfter))
-                .filter(matchRest -> (LocalDate.ofInstant(matchRest.getMatchDateTime(),ZoneId.systemDefault()).isBefore(matchBeforeOrEquals) || LocalDate.ofInstant(matchRest.getMatchDateTime(),ZoneId.systemDefault()) == matchBeforeOrEquals)).toList();
+        List<MatchRest> filteredMatches = matches.stream().filter(match -> match.getActualStatus() == matchStatus)
+                .filter(match -> (match.getClubPlayingHome().getName() + match.getClubPlayingAway().getName()).contains(clubPlayingName))
+                .filter(matchRest -> LocalDate.ofInstant(matchRest.getMatchDateTime(), ZoneId.systemDefault()).isAfter(matchAfter))
+                .filter(matchRest -> (LocalDate.ofInstant(matchRest.getMatchDateTime(), ZoneId.systemDefault()).isBefore(matchBeforeOrEquals) || LocalDate.ofInstant(matchRest.getMatchDateTime(), ZoneId.systemDefault()) == matchBeforeOrEquals)).toList();
         return ResponseEntity.ok(filteredMatches);
+    }
+
+    public ResponseEntity<Object> changeMatchStatus(String id, UpdateStatus status) {
+        Status matchStatus = status.getStatus();
+        Match match = matchCrudOperations.getById(id);
+        if (match == null) {
+            return ResponseEntity.status(NOT_FOUND).body("Match not found");
+        }
+        if (match.getActualStatus() == Status.NOT_STARTED && matchStatus == Status.FINISHED) {
+            return ResponseEntity.badRequest().body("match is not started yet");
+        }
+        if(
+                match.getActualStatus() == Status.NOT_STARTED && matchStatus == Status.STARTED){
+            match.setActualStatus(Status.STARTED);
+            Match updatedMatch = matchCrudOperations.saveAll(List.of(match)).get(0);
+            MatchRest updatedMatchRest = matchRestMapper.toRest(updatedMatch);
+
+
+            return ResponseEntity.ok(updatedMatchRest);
+        }
+
+        if (match.getActualStatus() == Status.FINISHED) {
+            return ResponseEntity.badRequest().body("match is finished");
+        }
+        if (match.getActualStatus() == Status.STARTED && matchStatus == Status.FINISHED) {
+
+             match.setActualStatus(matchStatus);
+
+            ClubMatch winner = null;
+            ClubMatch losing = null;
+            if (
+                    match.getClubPlayingHome().getScore() > match.getClubPlayingAway().getScore()
+            ) {
+                winner = match.getClubPlayingHome();
+                losing = match.getClubPlayingAway();
+
+                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),winner.getClub().getId());
+                winnerGains.setPoints(winnerGains.getPoints()+3);
+                winnerGains.setWins(winnerGains.getWins()+1);
+                winnerGains.setConcededGoals(winnerGains.getConcededGoals()+losing.getScore());
+                winnerGains.setScoredGoals(winnerGains.getScoredGoals()+winner.getScore());
+                if(losing.getScore()==0){
+                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber()+1);
+                }
+                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),losing.getClub().getId());
+                losingGains.setConcededGoals(losingGains.getConcededGoals()+winner.getScore());
+                losingGains.setScoredGoals(losingGains.getScoredGoals()+losing.getScore());
+                losingGains.setLosses(losingGains.getLosses()+1);
+
+            List<ClubParticipation> savedStats =    clubParticipationCrudOperations.saveAll(List.of(winnerGains, losingGains));
+                System.out.println("saved stats win home :" + savedStats);
+
+            }if (
+                    match.getClubPlayingHome().getScore() < match.getClubPlayingAway().getScore()
+            ) {
+                losing = match.getClubPlayingHome();
+                winner = match.getClubPlayingAway();
+
+
+                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),winner.getClub().getId());
+                winnerGains.setPoints(winnerGains.getPoints()+3);
+                winnerGains.setWins(winnerGains.getWins()+1);
+                winnerGains.setConcededGoals(winnerGains.getConcededGoals()+losing.getScore());
+                winnerGains.setScoredGoals(winnerGains.getScoredGoals()+winner.getScore());
+                if(losing.getScore()==0){
+                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber()+1);
+                }
+                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),losing.getClub().getId());
+                losingGains.setConcededGoals(losingGains.getConcededGoals()+winner.getScore());
+                losingGains.setScoredGoals(losingGains.getScoredGoals()+losing.getScore());
+                losingGains.setLosses(losingGains.getLosses()+1);
+
+                List<ClubParticipation> savedStats =    clubParticipationCrudOperations.saveAll(List.of(winnerGains, losingGains));
+                System.out.println("saved stats  lose home:" + savedStats);
+            }if(match.getClubPlayingHome().getScore() == match.getClubPlayingAway().getScore()){
+                losing = match.getClubPlayingAway();
+                winner = match.getClubPlayingHome();
+
+                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),winner.getClub().getId());
+                winnerGains.setPoints(winnerGains.getPoints()+1);
+                winnerGains.setDraws(winnerGains.getDraws()+1);
+                winnerGains.setConcededGoals(winnerGains.getConcededGoals()+losing.getScore());
+                winnerGains.setScoredGoals(winnerGains.getScoredGoals()+winner.getScore());
+                if(losing.getScore()==0){
+                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber()+1);
+                }
+                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),losing.getClub().getId());
+                losingGains.setPoints(losingGains.getPoints()+1);
+                losingGains.setDraws(losingGains.getDraws()+1);
+                losingGains.setConcededGoals(losingGains.getConcededGoals()+winner.getScore());
+                losingGains.setScoredGoals(losingGains.getScoredGoals()+losing.getScore());
+                if(winner.getScore()==0){
+                    losingGains.setCleanSheetNumber(losingGains.getCleanSheetNumber()+1);
+                }
+
+                winnerGains.setClub(clubCrudOperations.getById(winner.getClub().getId()));
+                losingGains.setClub(clubCrudOperations.getById(losing.getClub().getId()));
+                List<ClubParticipation> winnerAndLoses = new ArrayList<>();
+                winnerAndLoses.add(losingGains);
+                winnerAndLoses.add(winnerGains);
+                List<ClubParticipation> savedStats = clubParticipationCrudOperations.saveAll(winnerAndLoses);
+                System.out.println("saved stats draw  :" + savedStats);
+            }
+            Match updatedMatch = matchCrudOperations.saveAll(List.of(match)).get(0);
+            MatchRest updatedMatchRest = matchRestMapper.toRest(updatedMatch);
+
+
+            return ResponseEntity.ok(updatedMatchRest);
+        }
+        return ResponseEntity.internalServerError().body("internal server error");
+    }
+
+
+    public ResponseEntity<Object> addGoals(String id, List<CreateGoal> goals) {
+
     }
 }
