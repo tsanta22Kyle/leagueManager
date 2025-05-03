@@ -251,6 +251,7 @@ public class MatchService {
 
 
     public ResponseEntity<Object> addGoals(String id, List<CreateGoal> goals) {
+
         Match match = matchCrudOperations.getById(id);
         if (match == null) {
             return ResponseEntity.badRequest().body("match not found");
@@ -279,5 +280,6 @@ public class MatchService {
         });
         List<Goal> savedGoals = goalCrudOperations.saveAll(goalsToSave);
         return ResponseEntity.ok(savedGoals);
+
     }
 }

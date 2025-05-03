@@ -48,6 +48,7 @@ public class ClubStatistics {
         List<Goal> clubGoals = new ArrayList<>();
 
         if (this.getClub().getClubMatches().isEmpty()) {
+            System.out.println("0");
             return 0;
         }
 
@@ -67,6 +68,7 @@ public class ClubStatistics {
     @JsonProperty("cleanSheets")
     private int getCleanSheets() {
         if (this.getClub().getClubMatches().isEmpty()) {
+            System.out.println("0");
             return 0;
         }
 
@@ -88,6 +90,7 @@ public class ClubStatistics {
         List<Integer> clubGoals = new ArrayList<>();
 
         if (this.getClub().getClubMatches().isEmpty()) {
+            System.out.println("0");
             return 0;
         }
 
