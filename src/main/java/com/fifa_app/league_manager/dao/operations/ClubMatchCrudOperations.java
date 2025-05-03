@@ -109,4 +109,21 @@ public class ClubMatchCrudOperations implements CrudOperations<ClubMatch> {
         }
         return savedClubMatches;
     }
+    @SneakyThrows
+    public ClubMatch getByClubIdAndMatchId(String clubId, String matchId) {
+        ClubMatch clubMatch = null;
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT id, club_id, match_id FROM club_match WHERE club_id= ? and match_id=?")
+        ) {
+            stmt.setString(1, clubId);
+            stmt.setString(2, matchId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    clubMatch = clubMatchMapper.apply(rs);
+                    //   clubMatch.setClub(clubCrudOperations.getById(rs.getString("club_id")));
+                }
+            }
+        }
+        return clubMatch;
+    }
 }

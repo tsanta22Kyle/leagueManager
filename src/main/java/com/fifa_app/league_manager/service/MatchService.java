@@ -31,6 +31,7 @@ public class MatchService {
     private final ClubCrudOperations clubCrudOperations;
     private final PlayerMatchCrudOperations playerMatchCrudOperations;
     private final GoalCrudOperations goalCrudOperations;
+    private final PlayerCrudOperations playerCrudOperations;
 
     public ResponseEntity<Object> createAllMatches(Year seasonYear) {
         Season season = seasonCrudOperations.getByYear(seasonYear);
@@ -262,23 +263,42 @@ public class MatchService {
         List<Goal> goalsToSave = new ArrayList<>();
 
         goals.forEach(goal -> {
-            PlayerMatch playerMatch = playerMatchCrudOperations.getPlayerMatchesByPlayerIdAndMatchId(goal.getScorerId(), id).get(0);
+            List<PlayerMatch> isInTheMatch = playerMatchCrudOperations.getPlayerMatchesByPlayerIdAndMatchId(goal.getScorerId(), id);
+            ClubMatch clubMatch = clubMatchCrudOperations.getByClubIdAndMatchId(goal.getClubId(),id);
+            Player player = playerCrudOperations.getById(goal.getScorerId()) ;
+            if (!isInTheMatch.isEmpty()) {
 
-            if (playerMatch != null) {
-                Goal goalToSave = new Goal();
-                goalToSave.setMinuteOfGoal(goal.getMinuteOfGoal());
-                if (goal.getClubId() != playerMatch.getPlayer().getActualClub().getId()) {
-                    goalToSave.setOwnGoal(true);
-                } else if (goal.getClubId() == playerMatch.getPlayer().getActualClub().getId()) {
-                    goalToSave.setOwnGoal(false);
+                PlayerMatch playerMatch = isInTheMatch.get(0);
+                playerMatch.setPlayer(player);
+                System.out.println("player match "+playerMatch.getPlayer());
+
+                if (playerMatch != null) {
+                    Goal goalToSave = new Goal();
+                    goalToSave.setMinuteOfGoal(goal.getMinuteOfGoal());
+
+                    System.out.println("club in goal "+goal.getClubId());
+                    System.out.println("player's club "+player.getActualClub().getId());
+
+                    if (!goal.getClubId().equals(player.getActualClub().getId())) {
+                        goalToSave.setOwnGoal(true);
+                    } else {
+                        goalToSave.setOwnGoal(false);
+                    }
+                    goalToSave.setPlayerMatch(playerMatch);
+                    goalToSave.setId(UUID.randomUUID().toString());
+                    goalToSave.setClubMatch(clubMatch);
+                    playerMatch.setGoals(List.of());
+                    goalsToSave.add(goalToSave);
                 }
-                goalToSave.setPlayerMatch(playerMatch);
-                goalToSave.setId(UUID.randomUUID().toString());
-                playerMatch.setGoals(List.of());
-                goalsToSave.add(goalToSave);
             }
         });
+        if(goalsToSave.stream().filter(goal -> goal.getClubMatch() == null).count() > 0) {
+            return ResponseEntity.badRequest().body("club not exists");
+        }
         List<Goal> savedGoals = goalCrudOperations.saveAll(goalsToSave);
+        if(goalsToSave.size()==0){
+            return ResponseEntity.badRequest().body("goals not saved");
+        }
         return ResponseEntity.ok(savedGoals);
 
     }
