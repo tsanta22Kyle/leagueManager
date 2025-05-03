@@ -7,7 +7,7 @@ CREATE TABLE if not exists club_participation
     wins           int,
     draws          int,
     losses         int,
-    goals_scored   int,
-    goals_conceded int,
+    scored_goals   int,
+    conceded_goals int,
     clean_sheets   int
 );

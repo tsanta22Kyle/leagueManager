@@ -3,6 +3,7 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.ClubMatchMapper;
 import com.fifa_app.league_manager.model.ClubMatch;
+import com.fifa_app.league_manager.model.Match;
 import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -27,7 +28,24 @@ public class ClubMatchCrudOperations implements CrudOperations<ClubMatch> {
 
     @Override
     public List<ClubMatch> getAll() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<ClubMatch> clubMatches = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select id, club_id, match_id" +
+                     " from club_match;")) {
+            /*
+            statement.setInt(1, pageSize);
+            statement.setInt(2, pageSize * (page - 1));
+             */
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    ClubMatch clubMatchFromDb = clubMatchMapper.apply(resultSet);
+                    clubMatches.add(clubMatchFromDb);
+                }
+            }
+            return clubMatches;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SneakyThrows

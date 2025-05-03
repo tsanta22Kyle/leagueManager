@@ -247,6 +247,6 @@ public class MatchService {
 
 
     public ResponseEntity<Object> addGoals(String id, List<CreateGoal> goals) {
-
+        return ResponseEntity.internalServerError().body("Not implemented");
     }
 }
