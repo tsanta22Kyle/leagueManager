@@ -17,21 +17,24 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class GoalMapper implements Function<ResultSet, Goal> {
 
-    private final PlayerMatchCrudOperations playerMatchCrudOperations;
-    private final ClubMatchCrudOperations clubMatchCrudOperations;
+    // private final PlayerMatchCrudOperations playerMatchCrudOperations;
+    // private final ClubMatchCrudOperations clubMatchCrudOperations;
 
     @Override
     @SneakyThrows
     public Goal apply(ResultSet resultSet) {
+       // PlayerMatch scorer = playerMatchCrudOperations.getById(resultSet.getString("player_match_id"));
        // Match match = matchCrudOperations.getById(resultSet.getString("match_id"));
-        ClubMatch club = clubMatchCrudOperations.getById(resultSet.getString("club_match_id"));
-        PlayerMatch scorer = playerMatchCrudOperations.getById(resultSet.getString("scorer_id"));
+       // ClubMatch club = clubMatchCrudOperations.getById(resultSet.getString("club_match_id"));
+
         Goal goal = new Goal();
+
         goal.setId(resultSet.getString("id"));
         goal.setOwnGoal(resultSet.getBoolean("own_goal"));
         goal.setMinuteOfGoal(resultSet.getInt("minute_of_goal"));
-        goal.setPlayerMatch(scorer);
-        goal.setClubMatch(club);
+        // goal.setPlayerMatch(scorer);
+        // goal.setClubMatch(club);
+
         return goal;
     }
 }

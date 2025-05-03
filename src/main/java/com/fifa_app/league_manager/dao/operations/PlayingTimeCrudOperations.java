@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlayingTimeCrudOperations implements CrudOperations<PlayingTime> {
     private final PlayingTimeMapper playingTimeMapper;
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     @Override
     public List<PlayingTime> getAll() {
@@ -37,10 +37,11 @@ public class PlayingTimeCrudOperations implements CrudOperations<PlayingTime> {
             statement.setString(1, playingTimeId);
 
             try (ResultSet rs = statement.executeQuery()) {
-                while (rs.next()) {
+                if (rs.next()) {
                     playingTime = playingTimeMapper.apply(rs);
                 }
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -5,6 +5,7 @@ import com.fifa_app.league_manager.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Year;
 import java.util.List;
 
 @RestController
@@ -24,6 +25,11 @@ public class PlayerController {
     @PutMapping("")
     public Object savePlayers(@RequestBody List<CreateOrUpdatePlayer> players) {
         return playerService.saveAll(players);
+    }
+
+    @GetMapping("/{id}/statistics/{seasonYear}")
+    public Object getPlayerStatistics(@PathVariable Year seasonYear, @PathVariable String id) {
+        return playerService.getPlayerStatistic(id, seasonYear);
     }
 
 }

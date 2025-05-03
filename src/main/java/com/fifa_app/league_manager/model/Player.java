@@ -5,13 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.time.Year;
+import java.util.*;
 
-@AllArgsConstructor@NoArgsConstructor@Getter
-@Setter@EqualsAndHashCode@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 public class Player {
     private String name;
     private String id;
@@ -20,8 +22,8 @@ public class Player {
     private int age;
     private int preferredNumber;
     @JsonIgnore
-    private List<PlayerClub> clubs = new ArrayList<PlayerClub>();
-    private List<PlayerMatch> matches = new ArrayList<>();
+    private List<PlayerClub> clubs;
+    private List<PlayerMatch> matches;
 
     @JsonProperty("club")
     public Club getActualClub() {
@@ -43,12 +45,13 @@ public class Player {
     }
 
 
-    public int getActualNumber(){
-        if (clubs.size() > 0){
+    public int getActualNumber() {
+        if (clubs.size() > 0) {
 
         }
         return preferredNumber;
     }
+
     public PlayerClub endContract() {
         if (this.getClubs() == null || this.getClubs().isEmpty()) {
             return null;
@@ -63,6 +66,53 @@ public class Player {
         return this.getClubs().stream().max((o1, o2) -> o1.getEndDate().compareTo(o2.getEndDate())).get();
     }
 
+    @JsonIgnore
+    public int getScoreGoals() {
+        List<Goal> playerGoals = new ArrayList<>();
+
+        this.matches.forEach(playerMatch -> {
+            playerMatch.getGoals().forEach(goal -> {
+                if (!goal.isOwnGoal()) {
+                    playerGoals.add(goal);
+                }
+            });
+        });
+
+        return playerGoals.size();
+    }
+
+    @JsonIgnore
+    public PlayingTime getPlayingTime(Year seasonYear) {
+        PlayingTime playingTime = new PlayingTime();
+
+        List<PlayingTime> playerPlayingTimes = this.matches.stream().map(playerMatch -> {
+                    if (playerMatch.getMatch().getSeason().getYear().equals(seasonYear)) {
+                        return playerMatch.getPlayingTime();
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .peek(plt -> {
+                    plt.setUnit(DurationUnit.MINUTE);
+
+                    switch (plt.getUnit()) {
+                        case HOUR -> {
+                            plt.setValue(plt.getValue() * 60);
+                        }
+                        case SECOND -> {
+                            plt.setValue(Math.round((float) plt.getValue() / 60));
+                        }
+                    }
+                })
+                .toList();
+
+        int playingTimeValue = playerPlayingTimes.stream().map(PlayingTime::getValue).reduce(0, Integer::sum);
+
+        playingTime.setUnit(DurationUnit.MINUTE);
+        playingTime.setValue(playingTimeValue);
+
+        return playingTime;
+    }
 
 
     //

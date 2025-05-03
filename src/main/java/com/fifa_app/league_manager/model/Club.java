@@ -26,11 +26,15 @@ public class Club {
     private Coach coach;
 
     @JsonIgnore
-    private List<ClubParticipation> seasonsParticipation = new ArrayList<>();
+    private List<ClubMatch> clubMatches;
+
+
+    @JsonIgnore
+    private List<ClubParticipation> seasonsParticipation;
 
     public Season getActiveSeason() {
         if (!seasonsParticipation.isEmpty() && this.seasonsParticipation == null) return null;
-          //  System.out.println("seasonsParticipation: " + seasonsParticipation);
+        //  System.out.println("seasonsParticipation: " + seasonsParticipation);
 
         Optional<ClubParticipation> actualPreSeason = seasonsParticipation.stream().min((o1, o2) -> o1.getSeason().getYear().compareTo(o2.getSeason().getYear())).stream().findFirst();
         ClubParticipation activeSeason = seasonsParticipation
@@ -38,9 +42,10 @@ public class Club {
                 .filter(season -> season.getSeason().getStatus() == Status.STARTED)
                 .findFirst()
                 .orElse(actualPreSeason.orElse(null));
-    if (activeSeason == null) return null;
+        if (activeSeason == null) return null;
         return activeSeason.getSeason();
     }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<ClubParticipation> clubParticipations;
 }

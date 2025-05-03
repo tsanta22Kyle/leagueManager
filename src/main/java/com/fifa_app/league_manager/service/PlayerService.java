@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -63,5 +64,26 @@ public class PlayerService {
         List<CreateOrUpdatePlayer> savedPlayers = playerCrudOperations.saveAll(playerToSave).stream().map(player -> createOrUpdatePlayerMapper.toRest(player)).toList();
 
         return ResponseEntity.ok(savedPlayers);
+    }
+
+    public  ResponseEntity<Object> getPlayerStatistic(String playerId, Year seasonYear) {
+        PlayerStatistics playerStatistics = new PlayerStatistics();
+
+        Player player = playerCrudOperations.getById(playerId);
+        List<Season> seasons = seasonCrudOperations.getAll();
+
+        if (player == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player not found, id = " + playerId + " does not exist.");
+        }
+
+        boolean isProvidedSeasonYearExists = seasons.stream().noneMatch(season -> season.getYear().equals(seasonYear));
+        if (isProvidedSeasonYearExists) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Season year not found.");
+        }
+
+        playerStatistics.setPlayingTime(player.getPlayingTime(seasonYear));
+        playerStatistics.setScoredGoals(player.getScoreGoals());
+
+        return ResponseEntity.ok(playerStatistics);
     }
 }

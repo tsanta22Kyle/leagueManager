@@ -18,7 +18,7 @@ public class PlayingTimeMapper implements Function<ResultSet, PlayingTime> {
     public PlayingTime apply(ResultSet resultSet) {
         PlayingTime playingTime = new PlayingTime();
 
-        playingTime.setId(resultSet.getString("id "));
+        // playingTime.setId(resultSet.getString("id "));
         playingTime.setUnit(DurationUnit.valueOf(resultSet.getString("unit")));
         playingTime.setValue(resultSet.getInt("value"));
 

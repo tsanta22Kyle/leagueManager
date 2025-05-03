@@ -13,8 +13,10 @@ import java.util.List;
 @ToString
 public class PlayerMatch {
     private String id;
-    private List<Goal> goals = new ArrayList<>();
+
     private Player player;
     private Match match;
     private PlayingTime playingTime;
+
+    private List<Goal> goals;
 }
