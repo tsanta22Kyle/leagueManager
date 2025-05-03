@@ -60,6 +60,9 @@ public class ClubCrudOperations implements CrudOperations<Club> {
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
                     club = clubMapper.apply(rs);
+                    Coach coach = coachCrudOperations.getCoachById(rs.getString("coach_id"));
+
+                    club.setCoach(coach);
                 }
             }
         } catch (SQLException e) {

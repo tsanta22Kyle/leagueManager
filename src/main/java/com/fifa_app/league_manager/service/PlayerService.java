@@ -76,8 +76,8 @@ public class PlayerService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player not found, id = " + playerId + " does not exist.");
         }
 
-        boolean isProvidedSeasonYearExists = seasons.stream().noneMatch(season -> season.getYear().equals(seasonYear));
-        if (isProvidedSeasonYearExists) {
+        boolean isProvidedSeasonYearExists = seasons.stream().anyMatch(season -> season.getYear().equals(seasonYear));
+        if (!isProvidedSeasonYearExists) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Season year not found.");
         }
 

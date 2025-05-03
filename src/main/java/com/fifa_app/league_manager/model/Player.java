@@ -23,6 +23,7 @@ public class Player {
     private int preferredNumber;
     @JsonIgnore
     private List<PlayerClub> clubs;
+    @JsonIgnore
     private List<PlayerMatch> matches;
 
     @JsonProperty("club")
@@ -92,17 +93,19 @@ public class Player {
                     return null;
                 })
                 .filter(Objects::nonNull)
-                .peek(plt -> {
-                    plt.setUnit(DurationUnit.MINUTE);
-
+                .map(plt -> {
                     switch (plt.getUnit()) {
                         case HOUR -> {
                             plt.setValue(plt.getValue() * 60);
+                            plt.setUnit(DurationUnit.MINUTE);
                         }
                         case SECOND -> {
                             plt.setValue(Math.round((float) plt.getValue() / 60));
+                            plt.setUnit(DurationUnit.MINUTE);
                         }
+                        default -> System.out.println(plt.getUnit());
                     }
+                    return plt;
                 })
                 .toList();
 

@@ -32,6 +32,7 @@ public class Club {
     @JsonIgnore
     private List<ClubParticipation> seasonsParticipation;
 
+    @JsonIgnore
     public Season getActiveSeason() {
         if (!seasonsParticipation.isEmpty() && this.seasonsParticipation == null) return null;
         //  System.out.println("seasonsParticipation: " + seasonsParticipation);
