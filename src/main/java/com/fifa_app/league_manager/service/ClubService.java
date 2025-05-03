@@ -38,12 +38,18 @@ public class ClubService {
 
     public ResponseEntity<Object> getClubs() {
         List<Club> clubs = clubOperations.getAll();
+
+        this.setClubParticipationToAClub(clubs);
+
         List<ClubRest> clubRests = clubs.stream().map(clubRestMapper::toRest).toList();
         return ResponseEntity.ok().body(clubRests);
     }
 
     public ResponseEntity<Object> saveAll(List<Club> entities) {
         List<Club> clubs = clubOperations.saveAll(entities);
+
+        this.setClubParticipationToAClub(clubs);
+
         List<ClubRest> clubRests = clubs.stream().map(clubRestMapper::toRest).toList();
         return ResponseEntity.ok().body(clubRests);
     }
@@ -53,6 +59,8 @@ public class ClubService {
         if (existingClub == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, id = " + clubId + " does not exist.");
         }
+        List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(existingClub.getId());
+        existingClub.setClubParticipations(clubParticipations);
 
         List<Player> players = playerCrudOperations.getActualPlayersByClubId(clubId);
         return ResponseEntity.ok().body(players);
@@ -86,7 +94,7 @@ public class ClubService {
                     player.getClubs().forEach(playerClub -> {
                         List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(playerClub.getClub().getId());
                         playerClub.getClub().setClubParticipations(clubParticipations);
-                        System.out.println(" popo : "+playerClub.getClub().getClubParticipations());
+                        System.out.println(" popo : " + playerClub.getClub().getClubParticipations());
                     });
                 });
                 underContractPlayers.addAll(
@@ -188,7 +196,10 @@ public class ClubService {
         if (existingClub == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, ID = " + clubId + " does not exist.");
         }
+
         List<ClubParticipation> existingClubParticipation = clubParticipationCrudOperations.getManyByClubId(existingClub.getId());
+        existingClub.setClubParticipations(existingClubParticipation);
+
         ClubParticipation actualExistingClubParticipation = existingClubParticipation.stream()
                 .filter(clubParticipation -> clubParticipation.getSeason().getStatus().equals(Status.STARTED))
                 .toList().getFirst();
@@ -227,5 +238,12 @@ public class ClubService {
 
 
         return ResponseEntity.ok().body(players);
+    }
+
+    private void setClubParticipationToAClub(List<Club> clubs) {
+        clubs.forEach(club -> {
+            List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(club.getId());
+            club.setClubParticipations(clubParticipations);
+        });
     }
 }

@@ -13,7 +13,7 @@ public class ClubParticipation {
     private String id;
     private Club club;
     private Season season;
-   private int points  ;
+    private int points;
     private int wins;
     private int draws;
     private int losses;

@@ -17,26 +17,23 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class ClubParticipationMapper implements Function<ResultSet, ClubParticipation> {
 
-  //  private final ClubCrudOperations clubCrudOperations;
     private final SeasonCrudOperations seasonCrudOperations;
 
     @Override
     @SneakyThrows
     public ClubParticipation apply(ResultSet resultSet) {
-       //Club club = clubCrudOperations.getById(resultSet.getString("club_id"));
         Season season = seasonCrudOperations.getById(resultSet.getString("season_id"));
 
         ClubParticipation clubParticipation = new ClubParticipation();
 
         clubParticipation.setId(resultSet.getString("id"));
-      //  clubParticipation.setClub(club);
         clubParticipation.setSeason(season);
         clubParticipation.setDraws(resultSet.getInt("draws"));
         clubParticipation.setWins(resultSet.getInt("wins"));
         clubParticipation.setLosses(resultSet.getInt("losses"));
         clubParticipation.setPoints(resultSet.getInt("points"));
-        clubParticipation.setScoredGoals(resultSet.getInt("scored_goals"));
-        clubParticipation.setConcededGoals(resultSet.getInt("conceded_goals"));
+        clubParticipation.setScoredGoals(resultSet.getInt("goals_scored"));
+        clubParticipation.setConcededGoals(resultSet.getInt("goals_conceded"));
         clubParticipation.setCleanSheetNumber(resultSet.getInt("clean_sheets"));
 
 

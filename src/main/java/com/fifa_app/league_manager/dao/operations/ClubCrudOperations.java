@@ -37,11 +37,11 @@ public class ClubCrudOperations implements CrudOperations<Club> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     Club clubFromDb = clubMapper.apply(resultSet);
-                    String clubId = resultSet.getString("id");
+                    // String clubId = resultSet.getString("id");
 
                     Coach coach = coachCrudOperations.getCoachById(resultSet.getString("coach_id"));
-                  //  List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(clubId);
-                 //   clubFromDb.setClubParticipations(clubParticipations);
+                    // List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(clubId);
+                    // clubFromDb.setClubParticipations(clubParticipations);
                     clubFromDb.setCoach(coach);
                     clubs.add(clubFromDb);
                 }
@@ -64,8 +64,8 @@ public class ClubCrudOperations implements CrudOperations<Club> {
                 while (rs.next()) {
                     club = clubMapper.apply(rs);
 
-                  //  List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(rs.getString("id"));
-                    //club.setClubParticipations(clubParticipations);
+                    // List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(rs.getString("id"));
+                    // club.setClubParticipations(clubParticipations);
                 }
             }
         } catch (SQLException e) {
@@ -104,8 +104,8 @@ public class ClubCrudOperations implements CrudOperations<Club> {
 
                     ClubCoach clubCoach = clubCoachCrudOperations.findByClubId(savedClub.getId());
                     Coach coach = coachCrudOperations.getCoachById(clubCoach.getCoach().getId());
-                   // List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(resultSet.getString("id"));
-                    //savedClub.setClubParticipations(clubParticipations);
+                    // List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(resultSet.getString("id"));
+                    // savedClub.setClubParticipations(clubParticipations);
                     savedClub.setCoach(coach);
                     clubList.add(savedClub);
                 }
