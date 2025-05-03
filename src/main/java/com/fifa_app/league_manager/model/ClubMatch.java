@@ -20,6 +20,6 @@ public class ClubMatch {
     private List<Goal> goals;
 
     public int getScore() {
-        return 0;
+        return this.goals.size();
     }
 }

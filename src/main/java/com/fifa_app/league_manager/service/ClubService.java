@@ -50,19 +50,34 @@ public class ClubService {
 
     public ResponseEntity<Object> getClubsStatistics(Year seasonYear) {
         List<ClubStatistics> clubStatistics = new ArrayList<>();
+        List<Season> seasons = seasonCrudOperations.getAll();
 
         List<Club> clubs = clubCrudOperations.getAll();
         this.setClubParticipationAndClubMatchesToClubs(clubs);
 
+        boolean isProvidedSeasonYearExists = seasons.stream().anyMatch(season -> season.getYear().equals(seasonYear));
+        if (!isProvidedSeasonYearExists) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Season year not found.");
+        }
+
+
         clubs.forEach(club -> {
-            if (!club.getClubMatches().isEmpty()) {
-                ClubStatistics cls = new ClubStatistics();
+            //if (!club.getClubMatches().isEmpty()) {
+            List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(club.getId());
 
-                cls.setClub(club);
-                cls.setSeasonYear(seasonYear);
+            ClubParticipation actualExistingClubParticipation = clubParticipations.stream()
+                    .filter(clubParticipation -> clubParticipation.getSeason().getStatus().equals(Status.STARTED))
+                    .toList().getFirst();
 
-                clubStatistics.add(cls);
-            }
+            ClubStatistics cls = new ClubStatistics(club);
+
+            cls.setClub(club);
+            cls.setSeasonYear(seasonYear);
+            cls.setCoach(club.getCoach());
+            cls.setRankingPoints(actualExistingClubParticipation.getPoints());
+
+            clubStatistics.add(cls);
+            //}
         });
 
         return ResponseEntity.ok().body(clubStatistics);

@@ -49,8 +49,6 @@ public class ClubMatchService {
     private void setMatchToClubMatch(List<ClubMatch> clubMatches) {
         List<Match> matches = matchCrudOperations.getAll();
 
-        System.out.println(matches.size() > clubMatches.size());
-
         clubMatches.forEach(clubMatch -> {
             matches.forEach(match -> {
 
@@ -58,9 +56,9 @@ public class ClubMatchService {
                         || clubMatch.getId().equals(match.getClubPlayingAway().getId())
                 ) {
                     clubMatch.setMatch(match);
-                    System.out.println(clubMatch.getId() + " hit " + clubMatch.getMatch().getId());
+                    //System.out.println(clubMatch.getId() + " hit " + clubMatch.getMatch().getId());
                 } else {
-                    System.out.println(clubMatch.getId());
+                    System.out.println(match.getId() + " inspect this match");
                 }
             });
         });

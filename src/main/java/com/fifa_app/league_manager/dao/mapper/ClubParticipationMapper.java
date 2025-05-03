@@ -32,8 +32,8 @@ public class ClubParticipationMapper implements Function<ResultSet, ClubParticip
         clubParticipation.setWins(resultSet.getInt("wins"));
         clubParticipation.setLosses(resultSet.getInt("losses"));
         clubParticipation.setPoints(resultSet.getInt("points"));
-        clubParticipation.setScoredGoals(resultSet.getInt("scored_goals"));
-        clubParticipation.setConcededGoals(resultSet.getInt("conceded_goals"));
+        clubParticipation.setScoredGoals(resultSet.getInt("goals_scored"));
+        clubParticipation.setConcededGoals(resultSet.getInt("goals_conceded"));
         clubParticipation.setCleanSheetNumber(resultSet.getInt("clean_sheets"));
 
 
