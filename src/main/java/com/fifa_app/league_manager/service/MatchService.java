@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.Year;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -117,4 +119,20 @@ public class MatchService {
         }
     }
 
+    public Object getAllSeasonsMatches(Year seasonYear, Status matchStatus, String clubPlayingName, LocalDate matchAfter,LocalDate matchBeforeOrEquals) {
+
+        Season season = seasonCrudOperations.getByYear(seasonYear);
+
+        if(season == null){
+            return ResponseEntity.status(NOT_FOUND).body("Season not found");
+        }
+
+        List<MatchRest> matches = matchCrudOperations.getBySeasonId(season.getId()).stream().map(match -> matchRestMapper.toRest(match)).toList();
+
+     List<MatchRest> filteredMatches =    matches.stream().filter(match -> match.getActualStatus() == matchStatus)
+                .filter(match ->( match.getClubPlayingHome().getName()+match.getClubPlayingAway().getName()).contains(clubPlayingName))
+                .filter(matchRest -> LocalDate.ofInstant(matchRest.getMatchDateTime(),ZoneId.systemDefault()).isAfter(matchAfter))
+                .filter(matchRest -> (LocalDate.ofInstant(matchRest.getMatchDateTime(),ZoneId.systemDefault()).isBefore(matchBeforeOrEquals) || LocalDate.ofInstant(matchRest.getMatchDateTime(),ZoneId.systemDefault()) == matchBeforeOrEquals)).toList();
+        return ResponseEntity.ok(filteredMatches);
+    }
 }
