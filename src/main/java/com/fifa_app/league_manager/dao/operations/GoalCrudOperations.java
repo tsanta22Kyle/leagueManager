@@ -84,16 +84,16 @@ public class GoalCrudOperations implements CrudOperations<Goal> {
                     statement.setBoolean(3, entityToSave.isOwnGoal());
                     statement.setString(4, entityToSave.getClubMatch().getId());
                     statement.setInt(5, entityToSave.getMinuteOfGoal());
-                    statement.addBatch();
+
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        while (resultSet.next()) {
+                            matchScores.add(goalMapper.apply(resultSet));
+                        }
+                    }
                 } catch (SQLException e) {
                     throw new ServerException(e.getMessage());
                 }
             });
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    matchScores.add(goalMapper.apply(resultSet));
-                }
-            }
             return matchScores;
         }
     }

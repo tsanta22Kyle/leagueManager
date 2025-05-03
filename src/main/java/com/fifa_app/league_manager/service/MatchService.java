@@ -29,6 +29,8 @@ public class MatchService {
     private final ClubMatchCrudOperations clubMatchCrudOperations;
     private final MatchRestMapper matchRestMapper;
     private final ClubCrudOperations clubCrudOperations;
+    private final PlayerMatchCrudOperations playerMatchCrudOperations;
+    private final GoalCrudOperations goalCrudOperations;
 
     public ResponseEntity<Object> createAllMatches(Year seasonYear) {
         Season season = seasonCrudOperations.getByYear(seasonYear);
@@ -144,8 +146,8 @@ public class MatchService {
         if (match.getActualStatus() == Status.NOT_STARTED && matchStatus == Status.FINISHED) {
             return ResponseEntity.badRequest().body("match is not started yet");
         }
-        if(
-                match.getActualStatus() == Status.NOT_STARTED && matchStatus == Status.STARTED){
+        if (
+                match.getActualStatus() == Status.NOT_STARTED && matchStatus == Status.STARTED) {
             match.setActualStatus(Status.STARTED);
             Match updatedMatch = matchCrudOperations.saveAll(List.of(match)).get(0);
             MatchRest updatedMatchRest = matchRestMapper.toRest(updatedMatch);
@@ -159,7 +161,7 @@ public class MatchService {
         }
         if (match.getActualStatus() == Status.STARTED && matchStatus == Status.FINISHED) {
 
-             match.setActualStatus(matchStatus);
+            match.setActualStatus(matchStatus);
 
             ClubMatch winner = null;
             ClubMatch losing = null;
@@ -169,63 +171,65 @@ public class MatchService {
                 winner = match.getClubPlayingHome();
                 losing = match.getClubPlayingAway();
 
-                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),winner.getClub().getId());
-                winnerGains.setPoints(winnerGains.getPoints()+3);
-                winnerGains.setWins(winnerGains.getWins()+1);
-                winnerGains.setConcededGoals(winnerGains.getConcededGoals()+losing.getScore());
-                winnerGains.setScoredGoals(winnerGains.getScoredGoals()+winner.getScore());
-                if(losing.getScore()==0){
-                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber()+1);
+                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(), winner.getClub().getId());
+                winnerGains.setPoints(winnerGains.getPoints() + 3);
+                winnerGains.setWins(winnerGains.getWins() + 1);
+                winnerGains.setConcededGoals(winnerGains.getConcededGoals() + losing.getScore());
+                winnerGains.setScoredGoals(winnerGains.getScoredGoals() + winner.getScore());
+                if (losing.getScore() == 0) {
+                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber() + 1);
                 }
-                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),losing.getClub().getId());
-                losingGains.setConcededGoals(losingGains.getConcededGoals()+winner.getScore());
-                losingGains.setScoredGoals(losingGains.getScoredGoals()+losing.getScore());
-                losingGains.setLosses(losingGains.getLosses()+1);
+                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(), losing.getClub().getId());
+                losingGains.setConcededGoals(losingGains.getConcededGoals() + winner.getScore());
+                losingGains.setScoredGoals(losingGains.getScoredGoals() + losing.getScore());
+                losingGains.setLosses(losingGains.getLosses() + 1);
 
-            List<ClubParticipation> savedStats =    clubParticipationCrudOperations.saveAll(List.of(winnerGains, losingGains));
+                List<ClubParticipation> savedStats = clubParticipationCrudOperations.saveAll(List.of(winnerGains, losingGains));
                 System.out.println("saved stats win home :" + savedStats);
 
-            }if (
+            }
+            if (
                     match.getClubPlayingHome().getScore() < match.getClubPlayingAway().getScore()
             ) {
                 losing = match.getClubPlayingHome();
                 winner = match.getClubPlayingAway();
 
 
-                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),winner.getClub().getId());
-                winnerGains.setPoints(winnerGains.getPoints()+3);
-                winnerGains.setWins(winnerGains.getWins()+1);
-                winnerGains.setConcededGoals(winnerGains.getConcededGoals()+losing.getScore());
-                winnerGains.setScoredGoals(winnerGains.getScoredGoals()+winner.getScore());
-                if(losing.getScore()==0){
-                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber()+1);
+                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(), winner.getClub().getId());
+                winnerGains.setPoints(winnerGains.getPoints() + 3);
+                winnerGains.setWins(winnerGains.getWins() + 1);
+                winnerGains.setConcededGoals(winnerGains.getConcededGoals() + losing.getScore());
+                winnerGains.setScoredGoals(winnerGains.getScoredGoals() + winner.getScore());
+                if (losing.getScore() == 0) {
+                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber() + 1);
                 }
-                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),losing.getClub().getId());
-                losingGains.setConcededGoals(losingGains.getConcededGoals()+winner.getScore());
-                losingGains.setScoredGoals(losingGains.getScoredGoals()+losing.getScore());
-                losingGains.setLosses(losingGains.getLosses()+1);
+                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(), losing.getClub().getId());
+                losingGains.setConcededGoals(losingGains.getConcededGoals() + winner.getScore());
+                losingGains.setScoredGoals(losingGains.getScoredGoals() + losing.getScore());
+                losingGains.setLosses(losingGains.getLosses() + 1);
 
-                List<ClubParticipation> savedStats =    clubParticipationCrudOperations.saveAll(List.of(winnerGains, losingGains));
+                List<ClubParticipation> savedStats = clubParticipationCrudOperations.saveAll(List.of(winnerGains, losingGains));
                 System.out.println("saved stats  lose home:" + savedStats);
-            }if(match.getClubPlayingHome().getScore() == match.getClubPlayingAway().getScore()){
+            }
+            if (match.getClubPlayingHome().getScore() == match.getClubPlayingAway().getScore()) {
                 losing = match.getClubPlayingAway();
                 winner = match.getClubPlayingHome();
 
-                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),winner.getClub().getId());
-                winnerGains.setPoints(winnerGains.getPoints()+1);
-                winnerGains.setDraws(winnerGains.getDraws()+1);
-                winnerGains.setConcededGoals(winnerGains.getConcededGoals()+losing.getScore());
-                winnerGains.setScoredGoals(winnerGains.getScoredGoals()+winner.getScore());
-                if(losing.getScore()==0){
-                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber()+1);
+                ClubParticipation winnerGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(), winner.getClub().getId());
+                winnerGains.setPoints(winnerGains.getPoints() + 1);
+                winnerGains.setDraws(winnerGains.getDraws() + 1);
+                winnerGains.setConcededGoals(winnerGains.getConcededGoals() + losing.getScore());
+                winnerGains.setScoredGoals(winnerGains.getScoredGoals() + winner.getScore());
+                if (losing.getScore() == 0) {
+                    winnerGains.setCleanSheetNumber(winnerGains.getCleanSheetNumber() + 1);
                 }
-                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(),losing.getClub().getId());
-                losingGains.setPoints(losingGains.getPoints()+1);
-                losingGains.setDraws(losingGains.getDraws()+1);
-                losingGains.setConcededGoals(losingGains.getConcededGoals()+winner.getScore());
-                losingGains.setScoredGoals(losingGains.getScoredGoals()+losing.getScore());
-                if(winner.getScore()==0){
-                    losingGains.setCleanSheetNumber(losingGains.getCleanSheetNumber()+1);
+                ClubParticipation losingGains = clubParticipationCrudOperations.getBySeasonIdAndClubId(match.getSeason().getId(), losing.getClub().getId());
+                losingGains.setPoints(losingGains.getPoints() + 1);
+                losingGains.setDraws(losingGains.getDraws() + 1);
+                losingGains.setConcededGoals(losingGains.getConcededGoals() + winner.getScore());
+                losingGains.setScoredGoals(losingGains.getScoredGoals() + losing.getScore());
+                if (winner.getScore() == 0) {
+                    losingGains.setCleanSheetNumber(losingGains.getCleanSheetNumber() + 1);
                 }
 
                 winnerGains.setClub(clubCrudOperations.getById(winner.getClub().getId()));
@@ -247,6 +251,33 @@ public class MatchService {
 
 
     public ResponseEntity<Object> addGoals(String id, List<CreateGoal> goals) {
+        Match match = matchCrudOperations.getById(id);
+        if (match == null) {
+            return ResponseEntity.badRequest().body("match not found");
+        }
+        if (match.getActualStatus() != Status.STARTED) {
+            return ResponseEntity.badRequest().body("match not started");
+        }
+        List<Goal> goalsToSave = new ArrayList<>();
 
+        goals.forEach(goal -> {
+            PlayerMatch playerMatch = playerMatchCrudOperations.getPlayerMatchesByPlayerIdAndMatchId(goal.getScorerId(), id).get(0);
+
+            if (playerMatch != null) {
+                Goal goalToSave = new Goal();
+                goalToSave.setMinuteOfGoal(goal.getMinuteOfGoal());
+                if (goal.getClubId() != playerMatch.getPlayer().getActualClub().getId()) {
+                    goalToSave.setOwnGoal(true);
+                } else if (goal.getClubId() == playerMatch.getPlayer().getActualClub().getId()) {
+                    goalToSave.setOwnGoal(false);
+                }
+                goalToSave.setPlayerMatch(playerMatch);
+                goalToSave.setId(UUID.randomUUID().toString());
+                playerMatch.setGoals(List.of());
+                goalsToSave.add(goalToSave);
+            }
+        });
+        List<Goal> savedGoals = goalCrudOperations.saveAll(goalsToSave);
+        return ResponseEntity.ok(savedGoals);
     }
 }
