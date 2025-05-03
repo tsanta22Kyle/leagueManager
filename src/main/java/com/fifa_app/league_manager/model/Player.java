@@ -22,8 +22,8 @@ public class Player {
     private int age;
     private int preferredNumber;
     @JsonIgnore
-    private List<PlayerClub> clubs;
-    private List<PlayerMatch> matches;
+    private List<PlayerClub> clubs = new ArrayList<>();
+    private List<PlayerMatch> matches =  new ArrayList<>();
 
     @JsonProperty("club")
     public Club getActualClub() {

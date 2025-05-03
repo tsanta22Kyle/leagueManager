@@ -2,10 +2,7 @@ package com.fifa_app.league_manager.dao.operations;
 
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.PlayerMapper;
-import com.fifa_app.league_manager.model.Club;
-import com.fifa_app.league_manager.model.ClubCoach;
-import com.fifa_app.league_manager.model.Coach;
-import com.fifa_app.league_manager.model.Player;
+import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +19,7 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
     private final DataSource dataSource;
     private final PlayerMapper playerMapper;
     private final PlayerClubCrudOperations playerClubCrudOperations;
+    private final PlayerMatchCrudOperations playerMatchCrudOperations;
 
 
     @Override
@@ -37,6 +35,12 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     Player player = playerMapper.apply(resultSet);
+                    String playerId = resultSet.getString("id");
+
+                    List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                    List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+                    player.setClubs(playerClubs);
+                    player.setMatches(playerMatches);
                     players.add(player);
                 }
             }
@@ -59,7 +63,10 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     player = playerMapper.apply(resultSet);
-
+                    List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                    List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+                    player.setClubs(playerClubs);
+                    player.setMatches(playerMatches);
                 }
             }
             return player;
@@ -78,7 +85,14 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    players.add(playerMapper.apply(resultSet));
+                    Player player = playerMapper.apply(resultSet);
+                    String playerId = resultSet.getString("id");
+
+                    List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                    List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+                    player.setClubs(playerClubs);
+                    player.setMatches(playerMatches);
+                    players.add(player);
                 }
             }
             return players;
@@ -112,7 +126,14 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                     playerClubCrudOperations.saveAll(playerToSave.getClubs());
                     try (ResultSet resultSet = statement.executeQuery()) {
                         while (resultSet.next()) {
-                            savedPlayers.add(playerMapper.apply(resultSet));
+                            Player player = playerMapper.apply(resultSet);
+                            String playerId = resultSet.getString("id");
+
+                            List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                            List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+                            player.setClubs(playerClubs);
+                            player.setMatches(playerMatches);
+                            savedPlayers.add(player);
                         }
                     }
                 } catch (SQLException e) {

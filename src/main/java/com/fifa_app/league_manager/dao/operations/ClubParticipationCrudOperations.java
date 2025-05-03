@@ -23,6 +23,7 @@ import java.util.List;
 public class ClubParticipationCrudOperations implements CrudOperations<ClubParticipation> {
     private final DataSource dataSource;
     private final ClubParticipationMapper clubParticipationMapper;
+    private final ClubCrudOperations clubCrudOperations;
 
     @Override
     public List<ClubParticipation> getAll() {
@@ -48,7 +49,7 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
     public List<ClubParticipation> getManyByClubId(String clubId) {
         List<ClubParticipation> clubParticipations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select cp.id, cp.club_id, cp.season_id" +
+             PreparedStatement statement = connection.prepareStatement("select id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets" +
                      " from club_participation cp where cp.club_id = ?;")) {
 
             statement.setString(1, clubId);
@@ -64,20 +65,22 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
         }
     }
 
-    public ClubParticipation getBySeasonId(String seasonId) {
-        ClubParticipation clubParticipation = new ClubParticipation();
+    public List<ClubParticipation> getBySeasonId(String seasonId) {
+        List<ClubParticipation> clubParticipations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select cp.id, cp.club_id, cp.season_id" +
+             PreparedStatement statement = connection.prepareStatement("select id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets" +
                      " from club_participation cp where cp.season_id = ?;")) {
 
             statement.setString(1, seasonId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    clubParticipation = clubParticipationMapper.apply(resultSet);
+                while (resultSet.next()) {
+                  ClubParticipation  clubParticipation = clubParticipationMapper.apply(resultSet);
+                  clubParticipation.setClub(clubCrudOperations.getById(resultSet.getString("club_id")));
+                  clubParticipations.add(clubParticipation);
                 }
             }
-            return clubParticipation;
+            return clubParticipations;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

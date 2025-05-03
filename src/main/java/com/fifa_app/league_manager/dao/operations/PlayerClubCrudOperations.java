@@ -2,6 +2,7 @@ package com.fifa_app.league_manager.dao.operations;
 
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.PlayerClubMapper;
+import com.fifa_app.league_manager.model.Club;
 import com.fifa_app.league_manager.model.PlayerClub;
 import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class PlayerClubCrudOperations {
 
     private final PlayerClubMapper playerClubMapper;
     private final DataSource dataSource;
+    private final ClubCrudOperations clubCrudOperations;
 
     public List<PlayerClub> getPlayerClubsByPlayerId(String playerId) {
         List<PlayerClub> playerClubs = new ArrayList<>();
@@ -31,7 +33,11 @@ public class PlayerClubCrudOperations {
             ps.setString(1, playerId);
             try (ResultSet rs = ps.executeQuery();) {
                 while (rs.next()) {
-                    playerClubs.add(playerClubMapper.apply(rs));
+                    PlayerClub playerClub = playerClubMapper.apply(rs);
+                    Club club = clubCrudOperations.getById(rs.getString("club_id"));
+                    playerClub.setClub(club);
+
+                    playerClubs.add(playerClub);
                 }
             }
         } catch (SQLException e) {
@@ -79,7 +85,10 @@ public class PlayerClubCrudOperations {
                     }
                 try(ResultSet rs = statement.executeQuery()){
                     while(rs.next()){
-                        playerClubSaved.add(playerClubMapper.apply(rs));
+                        PlayerClub playerClub = playerClubMapper.apply(rs);
+                        Club club = clubCrudOperations.getById(rs.getString("club_id"));
+                        playerClub.setClub(club);
+                        playerClubSaved.add(playerClub);
                     }
                 }catch (SQLException e){
                     throw new ServerException(e.getMessage());

@@ -80,7 +80,15 @@ public class ClubService {
                     existingPlayers.add(existingPlayer);
                 }
             });
+
             if (!existingPlayers.isEmpty()) {
+                existingPlayers.forEach(player -> {
+                    player.getClubs().forEach(playerClub -> {
+                        List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(playerClub.getClub().getId());
+                        playerClub.getClub().setClubParticipations(clubParticipations);
+                        System.out.println(" popo : "+playerClub.getClub().getClubParticipations());
+                    });
+                });
                 underContractPlayers.addAll(
                         existingPlayers.stream()
                                 .filter(Objects::nonNull)
