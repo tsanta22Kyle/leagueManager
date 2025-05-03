@@ -18,14 +18,14 @@ public class ClubMatchMapper implements Function<ResultSet, ClubMatch> {
 
     // private final MatchCrudOperations matchCrudOperations;
     private final GoalCrudOperations goalCrudOperations;
-    // private final ClubCrudOperations clubCrudOperations;
+     private final ClubCrudOperations clubCrudOperations;
     @SneakyThrows
     @Override
     public ClubMatch apply(ResultSet resultSet) {
         ClubMatch clubMatch = new ClubMatch();
-        // Club club = clubCrudOperations.getById(resultSet.getString("club_id"));
+         Club club = clubCrudOperations.getById(resultSet.getString("club_id"));
         // clubMatch.setMatch(matchCrudOperations.getById(resultSet.getString("match_id")));
-        // clubMatch.setClub(club);
+         clubMatch.setClub(club);
         List<Goal> goals = goalCrudOperations.getByClubMatchId(resultSet.getString("id"));
         clubMatch.setId(resultSet.getString("id"));
         clubMatch.setGoals(goals);
