@@ -7,6 +7,7 @@ import com.fifa_app.league_manager.service.ClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Year;
 import java.util.List;
 
 @RestController
@@ -38,5 +39,10 @@ public class ClubController {
     @PostMapping("/{id}/players")
     public Object attachPlayersToAClub(@PathVariable String id, @RequestBody List<Player> entities) {
         return clubService.attachPlayersToAClub(id, entities);
+    }
+
+    @GetMapping("/statistics/{seasonYear}")
+    public Object getClubsStatistics(@PathVariable Year seasonYear) {
+        return clubService.getClubsStatistics(seasonYear);
     }
 }

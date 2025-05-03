@@ -3,6 +3,8 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.MatchMapper;
 import com.fifa_app.league_manager.model.Club;
+import com.fifa_app.league_manager.model.ClubMatch;
+import com.fifa_app.league_manager.model.Coach;
 import com.fifa_app.league_manager.model.Match;
 import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +20,36 @@ import java.util.List;
 public class MatchCrudOperations implements CrudOperations<Match> {
     private final MatchMapper matchMapper;
     private final DataSource dataSource;
+    private final ClubMatchCrudOperations clubMatchCrudOperations;
 
     @Override
+    @SneakyThrows
     public List<Match> getAll() {
-        return List.of();
+        List<Match> matches = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select id, stadium, club_playing_home_id, club_playing_away_id, match_datetime, actual_status, season_id" +
+                     " from match;")) {
+            /*
+            statement.setInt(1, pageSize);
+            statement.setInt(2, pageSize * (page - 1));
+             */
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    ClubMatch homeClub = clubMatchCrudOperations.getById(resultSet.getString("club_playing_home_id"));
+                    ClubMatch awayClub = clubMatchCrudOperations.getById(resultSet.getString("club_playing_away_id"));
+
+                    Match match = matchMapper.apply(resultSet);
+
+                    match.setClubPlayingAway(awayClub);
+                    match.setClubPlayingHome(homeClub);
+
+                    matches.add(match);
+                }
+            }
+            return matches;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SneakyThrows
@@ -34,7 +62,12 @@ public class MatchCrudOperations implements CrudOperations<Match> {
 
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
+                    ClubMatch homeClub = clubMatchCrudOperations.getById(rs.getString("club_playing_home_id"));
+                    ClubMatch awayClub = clubMatchCrudOperations.getById(rs.getString("club_playing_away_id"));
                     match = matchMapper.apply(rs);
+
+                    match.setClubPlayingAway(awayClub);
+                    match.setClubPlayingHome(homeClub);
                 }
             }
         } catch (SQLException e) {
@@ -61,7 +94,14 @@ public class MatchCrudOperations implements CrudOperations<Match> {
 
                     try (ResultSet rs = statement.executeQuery()) {
                         while (rs.next()) {
-                            savedMatches.add(matchMapper.apply(rs));
+                            ClubMatch homeClub = clubMatchCrudOperations.getById(rs.getString("club_playing_home_id"));
+                            ClubMatch awayClub = clubMatchCrudOperations.getById(rs.getString("club_playing_away_id"));
+
+                            Match savedMatch = matchMapper.apply(rs);
+                            savedMatch.setClubPlayingAway(awayClub);
+                            savedMatch.setClubPlayingHome(homeClub);
+
+                            savedMatches.add(savedMatch);
                         }
                     }
                 } catch (SQLException e) {
@@ -81,7 +121,13 @@ public class MatchCrudOperations implements CrudOperations<Match> {
 
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
+                    ClubMatch homeClub = clubMatchCrudOperations.getById(rs.getString("club_playing_home_id"));
+                    ClubMatch awayClub = clubMatchCrudOperations.getById(rs.getString("club_playing_away_id"));
+
                     Match match = matchMapper.apply(rs);
+                    match.setClubPlayingAway(awayClub);
+                    match.setClubPlayingHome(homeClub);
+
                     matches.add(match);
                 }
             }

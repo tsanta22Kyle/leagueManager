@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,36 +27,58 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ClubService {
-    private final ClubCrudOperations clubOperations;
-    private final PlayerCrudOperations playerCrudOperations;
-    private final CreateOrUpdatePlayerMapper createOrUpdatePlayerMapper;
-    private final PlayerClubCrudOperations playerClubCrudOperations;
     private final ClubCrudOperations clubCrudOperations;
     private final ClubParticipationCrudOperations clubParticipationCrudOperations;
+    private final PlayerCrudOperations playerCrudOperations;
+    private final PlayerClubCrudOperations playerClubCrudOperations;
     private final SeasonCrudOperations seasonCrudOperations;
+
+    private final CreateOrUpdatePlayerMapper createOrUpdatePlayerMapper;
     private final ClubRestMapper clubRestMapper;
+    private final ClubMatchService clubMatchService;
 
 
     public ResponseEntity<Object> getClubs() {
-        List<Club> clubs = clubOperations.getAll();
+        List<Club> clubs = clubCrudOperations.getAll();
 
-        this.setClubParticipationToAClub(clubs);
+        this.setClubParticipationAndClubMatchesToClubs(clubs);
 
         List<ClubRest> clubRests = clubs.stream().map(clubRestMapper::toRest).toList();
         return ResponseEntity.ok().body(clubRests);
     }
 
-    public ResponseEntity<Object> saveAll(List<Club> entities) {
-        List<Club> clubs = clubOperations.saveAll(entities);
 
-        this.setClubParticipationToAClub(clubs);
+    public ResponseEntity<Object> getClubsStatistics(Year seasonYear) {
+        List<ClubStatistics> clubStatistics = new ArrayList<>();
+
+        List<Club> clubs = clubCrudOperations.getAll();
+        this.setClubParticipationAndClubMatchesToClubs(clubs);
+
+        clubs.forEach(club -> {
+            if (!club.getClubMatches().isEmpty()) {
+                ClubStatistics cls = new ClubStatistics();
+
+                cls.setClub(club);
+                cls.setSeasonYear(seasonYear);
+
+                clubStatistics.add(cls);
+            }
+        });
+
+        return ResponseEntity.ok().body(clubStatistics);
+    }
+
+    public ResponseEntity<Object> saveAll(List<Club> entities) {
+        List<Club> clubs = clubCrudOperations.saveAll(entities);
+
+        this.setClubParticipationAndClubMatchesToClubs(clubs);
 
         List<ClubRest> clubRests = clubs.stream().map(clubRestMapper::toRest).toList();
         return ResponseEntity.ok().body(clubRests);
     }
 
     public ResponseEntity<Object> getActualPlayers(String clubId) {
-        Club existingClub = clubOperations.getById(clubId);
+        Club existingClub = clubCrudOperations.getById(clubId);
         if (existingClub == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, id = " + clubId + " does not exist.");
         }
@@ -70,7 +93,7 @@ public class ClubService {
         try {
 
 
-            Club existingClub = clubOperations.getById(clubId);
+            Club existingClub = clubCrudOperations.getById(clubId);
             if (existingClub == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, id = " + clubId + " does not exist.");
             }
@@ -240,9 +263,12 @@ public class ClubService {
         return ResponseEntity.ok().body(players);
     }
 
-    private void setClubParticipationToAClub(List<Club> clubs) {
+    private void setClubParticipationAndClubMatchesToClubs(List<Club> clubs) {
         clubs.forEach(club -> {
             List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(club.getId());
+            List<ClubMatch> clubMatches = clubMatchService.getManyByClubId(club.getId());
+
+            club.setClubMatches(clubMatches);
             club.setClubParticipations(clubParticipations);
         });
     }
