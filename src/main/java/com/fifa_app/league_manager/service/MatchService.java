@@ -4,6 +4,8 @@ import com.fifa_app.league_manager.dao.operations.ClubMatchCrudOperations;
 import com.fifa_app.league_manager.dao.operations.ClubParticipationCrudOperations;
 import com.fifa_app.league_manager.dao.operations.MatchCrudOperations;
 import com.fifa_app.league_manager.dao.operations.SeasonCrudOperations;
+import com.fifa_app.league_manager.endpoint.mapper.MatchRestMapper;
+import com.fifa_app.league_manager.endpoint.rest.MatchRest;
 import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ public class MatchService {
     private final MatchCrudOperations matchCrudOperations;
     private final ClubParticipationCrudOperations clubParticipationCrudOperations;
     private final ClubMatchCrudOperations clubMatchCrudOperations;
+    private final MatchRestMapper matchRestMapper;
 
     public ResponseEntity<Object> createAllMatches(Year seasonYear) {
         Season season = seasonCrudOperations.getByYear(seasonYear);
@@ -49,7 +52,6 @@ public class MatchService {
         Map<String, Club> homeClubs = new HashMap<>();
         Map<String, Club> awayClubs = new HashMap<>();
 
-        // 1. Créer les matchs (sans clubPlayingHome ni clubPlayingAway)
         for (int i = 0; i < participatingClubs.size(); i++) {
             for (int j = 0; j < participatingClubs.size(); j++) {
                 if (i == j) continue;
@@ -71,7 +73,6 @@ public class MatchService {
         assignConsecutiveDates(matchesToCreate, Instant.now());
         matchCrudOperations.saveAll(matchesToCreate);
 
-        // 2. Créer les ClubMatch associés aux Match existants
         List<ClubMatch> homeMatchesToSave = new ArrayList<>();
         List<ClubMatch> awayMatchesToSave = new ArrayList<>();
         Map<String, ClubMatch> homeClubMatchMap = new HashMap<>();
@@ -98,15 +99,14 @@ public class MatchService {
         clubMatchCrudOperations.saveAll(homeMatchesToSave);
         clubMatchCrudOperations.saveAll(awayMatchesToSave);
 
-        // 3. Update des Matchs pour lier les ClubMatchs créés
         for (Match match : matchesToCreate) {
             match.setClubPlayingHome(homeClubMatchMap.get(match.getId()));
             match.setClubPlayingAway(awayClubMatchMap.get(match.getId()));
         }
 
-        matchCrudOperations.saveAll(matchesToCreate); // update
-
-        return ResponseEntity.ok(matchesToCreate);
+       List<Match> savedMatches = matchCrudOperations.saveAll(matchesToCreate);
+        List<MatchRest> restMatches = savedMatches.stream().map(match -> matchRestMapper.toRest(match)).toList();
+        return ResponseEntity.ok(restMatches);
     }
 
 
