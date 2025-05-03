@@ -22,9 +22,9 @@ public class Player {
     private int age;
     private int preferredNumber;
     @JsonIgnore
-    private List<PlayerClub> clubs;
+    private List<PlayerClub> clubs = new ArrayList<>();
     @JsonIgnore
-    private List<PlayerMatch> matches;
+    private List<PlayerMatch> matches = new ArrayList<>();
 
     @JsonProperty("club")
     public Club getActualClub() {
@@ -103,7 +103,6 @@ public class Player {
                             plt.setValue(Math.round((float) plt.getValue() / 60));
                             plt.setUnit(DurationUnit.MINUTE);
                         }
-                        default -> System.out.println(plt.getUnit());
                     }
                     return plt;
                 })

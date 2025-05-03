@@ -17,8 +17,8 @@ import java.util.function.Function;
 @Component@RequiredArgsConstructor
 public class PlayerMapper implements Function<ResultSet, Player> {
 
-    private final PlayerClubCrudOperations playerClubCrudOperations;
-    private final PlayerMatchCrudOperations playerMatchCrudOperations;
+  //  private final PlayerClubCrudOperations playerClubCrudOperations;
+    //private final PlayerMatchCrudOperations playerMatchCrudOperations;
 
     @SneakyThrows
     @Override
@@ -26,8 +26,8 @@ public class PlayerMapper implements Function<ResultSet, Player> {
         Player player = new Player();
         String playerId = resultSet.getString("id");
 
-        List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
-        List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+      //  List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+        //List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
 
        // System.out.println("playerClubs: " + playerClubs);
         player.setId(playerId);
@@ -36,8 +36,8 @@ public class PlayerMapper implements Function<ResultSet, Player> {
         player.setCountry(resultSet.getString("country"));
         player.setPosition( Positions.valueOf(resultSet.getObject("position").toString()));
         player.setPreferredNumber(resultSet.getInt("preferred_number"));
-        player.setClubs(playerClubs);
-        player.setMatches(playerMatches);
+      //  player.setClubs(playerClubs);
+       // player.setMatches(playerMatches);
 
         return player;
     }

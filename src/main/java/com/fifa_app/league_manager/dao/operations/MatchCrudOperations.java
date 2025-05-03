@@ -4,14 +4,12 @@ import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.MatchMapper;
 import com.fifa_app.league_manager.model.Club;
 import com.fifa_app.league_manager.model.Match;
+import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,13 +44,50 @@ public class MatchCrudOperations implements CrudOperations<Match> {
     }
 
     @SneakyThrows
-    public List<Match> saveAll(List<Match> matches) {
+    public List<Match> saveAll(List<Match> matchesToSave) {
         List<Match> savedMatches = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-        PreparedStatement statement = conn.prepareStatement("INSERT INTO match (id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status) VALUES (?,?,?,?,?) ON CONFLICT ");
-        ){
+             PreparedStatement statement = conn.prepareStatement("INSERT INTO match (id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status,season_id) VALUES (?,?,?,?,?,?) ON CONFLICT (id) " +
+                     "DO UPDATE SET actual_status=excluded.actual_status RETURNING id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status,season_id");
+        ) {
+            matchesToSave.forEach(matchToSave -> {
+                try {
+                    statement.setString(1, matchToSave.getId());
+                    statement.setString(2,matchToSave.getClubPlayingHome().getId());
+                    statement.setString(3,matchToSave.getClubPlayingAway().getId());
+                    statement.setTimestamp(4, Timestamp.from(matchToSave.getMatchDatetime()));
+                    statement.setObject(5, matchToSave.getActualStatus().toString());
+                    statement.setObject(6, matchToSave.getSeason().getId());
 
+                    try (ResultSet rs = statement.executeQuery()) {
+                        while (rs.next()) {
+                            savedMatches.add(matchMapper.apply(rs));
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new ServerException(e.getMessage());
+                }
+            });
         }
         return savedMatches;
+    }
+
+    public List<Match> getBySeasonId(String id) {
+        List<Match> matches = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement statement = conn.prepareStatement("select id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status, season_id" +
+                     " from match m where m.season_id = ?;")) {
+            statement.setString(1, id);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    Match match = matchMapper.apply(rs);
+                    matches.add(match);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return matches;
     }
 }

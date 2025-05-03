@@ -18,8 +18,8 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class ClubMapper implements Function<ResultSet, Club> {
 
-    private final CoachCrudOperations coachCrudOperations;
-    private final ClubParticipationCrudOperations clubParticipationCrudOperations;
+    //private final CoachCrudOperations coachCrudOperations;
+   // private final ClubParticipationCrudOperations clubParticipationCrudOperations;
     private final ClubMatchCrudOperations clubMatchCrudOperations;
 
     @Override
@@ -28,7 +28,7 @@ public class ClubMapper implements Function<ResultSet, Club> {
         Club club = new Club();
         String clubId = resultSet.getString("id");
 
-        List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(clubId);
+      //  List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(clubId);
         List<ClubMatch> clubMatches = clubMatchCrudOperations.getManyByClubId(clubId);
 
         club.setId(clubId);
@@ -36,7 +36,7 @@ public class ClubMapper implements Function<ResultSet, Club> {
         club.setYearCreation(resultSet.getLong("year_creation"));
         club.setAcronym(resultSet.getString("acronym"));
         club.setStadium(resultSet.getString("stadium"));
-        club.setSeasonsParticipation(clubParticipations);
+       // club.setSeasonsParticipation(clubParticipations);
         club.setClubMatches(clubMatches);
 
         return club;

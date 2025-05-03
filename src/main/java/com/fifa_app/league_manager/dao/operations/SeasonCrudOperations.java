@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -108,6 +109,28 @@ public class SeasonCrudOperations implements CrudOperations<Season> {
                 }
             }
           //  System.out.println("season "+season);
+            return season;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Season getByYear(Year seasonYear) {
+
+        Season season = null;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select s.id, s.id, s.year, s.alias, s.status from season s where s.year=?")) {
+            /*
+            statement.setInt(1, pageSize);
+            statement.setInt(2, pageSize * (page - 1));
+             */
+            statement.setInt(1,seasonYear.getValue() );
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    season =(seasonMapper.apply(resultSet));
+                }
+            }
+            //  System.out.println("season "+season);
             return season;
         } catch (SQLException e) {
             throw new RuntimeException(e);

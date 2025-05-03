@@ -16,7 +16,7 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public class MatchMapper implements Function<ResultSet, Match> {
-    private final ClubCrudOperations clubCrudOperations;
+    private final ClubMatchCrudOperations clubMatchCrudOperations;
     // private final PlayerMatchCrudOperations playerMatchCrudOperations;
     private final SeasonCrudOperations seasonCrudOperations;
 
@@ -27,17 +27,14 @@ public class MatchMapper implements Function<ResultSet, Match> {
 
         Match match = new Match();
 
-        Club homeClub = clubCrudOperations.getById(resultSet.getString("club_playing_home_id"));
-        Club awayClub = clubCrudOperations.getById(resultSet.getString("club_playing_away_id"));
+        ClubMatch homeClub = clubMatchCrudOperations.getById(resultSet.getString("club_playing_home_id"));
+        ClubMatch awayClub = clubMatchCrudOperations.getById(resultSet.getString("club_playing_away_id"));
         //List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByMatchId(matchId);
-        Season season = seasonCrudOperations.getById(homeClub.getSeasonsParticipation().stream()
-                .map(ClubParticipation::getSeason).toList()
-                .getFirst()
-                .getId());
+        Season season = seasonCrudOperations.getById(resultSet.getString("season_id"));
 
         match.setId(matchId);
-        match.setStadium(resultSet.getString("stadium"));
         match.setClubPlayingHome(homeClub);
+        match.setStadium(match.getClubPlayingHome().getClub().getStadium());
         match.setClubPlayingAway(awayClub);
         match.setMatchDatetime(resultSet.getTimestamp("match_datetime").toInstant());
         match.setActualStatus(Status.valueOf(resultSet.getString("actual_status")));

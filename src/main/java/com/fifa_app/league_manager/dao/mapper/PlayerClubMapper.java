@@ -16,7 +16,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class PlayerClubMapper implements Function<ResultSet, PlayerClub> {
 
-    private final ClubCrudOperations clubOperations;
+   // private final ClubCrudOperations clubOperations;
     //  private final PlayerCrudOperations playerCrudOperations;
     private final SeasonCrudOperations seasonOperations;
 
@@ -33,8 +33,8 @@ public class PlayerClubMapper implements Function<ResultSet, PlayerClub> {
 
             String seasonId = resultSet.getString("season_id");
             String clubId = resultSet.getString("club_id");
-            Club club = clubOperations.getById(clubId);
-            playerClub.setClub(club);
+           // Club club = clubOperations.getById(clubId);
+            //playerClub.setClub(club);
 
             playerClub.setId(resultSet.getString("id"));
             playerClub.setJoinDate(resultSet.getDate("join_date").toLocalDate());

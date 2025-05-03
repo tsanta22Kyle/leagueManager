@@ -26,11 +26,11 @@ public class Club {
     private Coach coach;
 
     @JsonIgnore
-    private List<ClubMatch> clubMatches;
+    private List<ClubMatch> clubMatches = new ArrayList<>();
 
 
     @JsonIgnore
-    private List<ClubParticipation> seasonsParticipation;
+    private List<ClubParticipation> seasonsParticipation = new ArrayList<>();
 
     @JsonIgnore
     public Season getActiveSeason() {

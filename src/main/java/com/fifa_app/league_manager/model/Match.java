@@ -15,8 +15,8 @@ import java.util.List;
 @ToString
 public class Match {
     private String id;
-    private Club clubPlayingHome;
-    private Club clubPlayingAway;
+    private ClubMatch clubPlayingHome;
+    private ClubMatch clubPlayingAway;
     private String stadium;
     private Instant matchDatetime;
     private Status actualStatus;
@@ -26,4 +26,8 @@ public class Match {
 
     @JsonIgnore
     private Season season;
+
+    public Match(String matchId) {
+        this.id = matchId;
+    }
 }
