@@ -3,6 +3,7 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.ClubMatchMapper;
 import com.fifa_app.league_manager.model.ClubMatch;
+import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class ClubMatchCrudOperations implements CrudOperations<ClubMatch> {
 
     private final DataSource dataSource;
     private final ClubMatchMapper clubMatchMapper;
+ // private final ClubCrudOperations clubCrudOperations;
 
 
     @Override
@@ -37,6 +40,7 @@ public class ClubMatchCrudOperations implements CrudOperations<ClubMatch> {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     clubMatch = clubMatchMapper.apply(rs);
+                //   clubMatch.setClub(clubCrudOperations.getById(rs.getString("club_id")));
                 }
             }
         }
@@ -60,22 +64,31 @@ public class ClubMatchCrudOperations implements CrudOperations<ClubMatch> {
     }
 
     @SneakyThrows
-    public ClubMatch save(ClubMatch clubMatch) {
-        ClubMatch clubMatchSaved = null;
+    public List<ClubMatch> saveAll(List<ClubMatch> clubMatchesToSave) {
+        List<ClubMatch> savedClubMatches = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement("INSERT INTO club_match(id,club_id, match_id) VALUES(?,?, ?) on conflict (id) do nothing " +
                      "returning club_id,id,match_id")
         ){
+
+            clubMatchesToSave.forEach(clubMatch -> {
+                try {
+
             stmt.setString(1, clubMatch.getId());
             stmt.setString(2, clubMatch.getClub().getId());
             stmt.setString(3, clubMatch.getMatch().getId());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    clubMatchSaved = clubMatchMapper.apply(rs);
+                  ClubMatch clubMatchSaved = clubMatchMapper.apply(rs);
+                    savedClubMatches.add(clubMatchSaved);
                 }
-            }
+                }
+            }catch (SQLException e) {
+                    throw new ServerException(e.getMessage());
+                }
+            });
         }
-        return clubMatchSaved;
+        return savedClubMatches;
     }
 }

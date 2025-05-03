@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -35,49 +33,82 @@ public class MatchService {
         if (season.getStatus() != Status.STARTED) {
             return ResponseEntity.badRequest().body("season is not started");
         }
+
         List<Match> existingMatches = matchCrudOperations.getBySeasonId(season.getId());
-        if (existingMatches.size() > 0) {
+        if (!existingMatches.isEmpty()) {
             return ResponseEntity.badRequest().body("matches already exist");
         }
 
         List<ClubParticipation> participatingClubs = clubParticipationCrudOperations.getBySeasonId(season.getId());
+        if (participatingClubs.size() < 2) {
+            return ResponseEntity.badRequest().body("Not enough clubs to create matches");
+        }
 
-        System.out.println("participatingClubs: " + participatingClubs);
         List<Match> matchesToCreate = new ArrayList<>();
+        List<String> matchIds = new ArrayList<>();
+        Map<String, Club> homeClubs = new HashMap<>();
+        Map<String, Club> awayClubs = new HashMap<>();
 
+        // 1. Créer les matchs (sans clubPlayingHome ni clubPlayingAway)
         for (int i = 0; i < participatingClubs.size(); i++) {
             for (int j = 0; j < participatingClubs.size(); j++) {
-                if (i == j) continue; // Un club ne joue pas contre lui-même
+                if (i == j) continue;
+
                 String matchId = UUID.randomUUID().toString();
-                ClubMatch homeClubMatchToSave = new ClubMatch();
-                homeClubMatchToSave.setClub(participatingClubs.get(i).getClub());
-                homeClubMatchToSave.setMatch(new Match(matchId));
-                homeClubMatchToSave.setId(UUID.randomUUID().toString());
-                ClubMatch savedClubHomeMatch = clubMatchCrudOperations.save(homeClubMatchToSave);
-
-                ClubMatch awayClubMatchToSave = new ClubMatch();
-                awayClubMatchToSave.setClub(participatingClubs.get(j).getClub());
-                awayClubMatchToSave.setMatch(new Match(matchId));
-                awayClubMatchToSave.setId(UUID.randomUUID().toString());
-                ClubMatch savedClubAwayMatch = clubMatchCrudOperations.save(awayClubMatchToSave);
-
-
                 Match match = new Match();
                 match.setId(matchId);
-
                 match.setSeason(season);
-                match.setClubPlayingHome(savedClubHomeMatch);
-                match.setClubPlayingAway(savedClubAwayMatch);
                 match.setActualStatus(Status.NOT_STARTED);
 
                 matchesToCreate.add(match);
+                matchIds.add(matchId);
+
+                homeClubs.put(matchId, participatingClubs.get(i).getClub());
+                awayClubs.put(matchId, participatingClubs.get(j).getClub());
             }
         }
-        assignConsecutiveDates(matchesToCreate, Instant.now());
-        List<Match> createdMatches = matchCrudOperations.saveAll(matchesToCreate);
 
-        return ResponseEntity.ok(createdMatches);
+        assignConsecutiveDates(matchesToCreate, Instant.now());
+        matchCrudOperations.saveAll(matchesToCreate);
+
+        // 2. Créer les ClubMatch associés aux Match existants
+        List<ClubMatch> homeMatchesToSave = new ArrayList<>();
+        List<ClubMatch> awayMatchesToSave = new ArrayList<>();
+        Map<String, ClubMatch> homeClubMatchMap = new HashMap<>();
+        Map<String, ClubMatch> awayClubMatchMap = new HashMap<>();
+
+        for (String matchId : matchIds) {
+            // Home
+            ClubMatch home = new ClubMatch();
+            home.setId(UUID.randomUUID().toString());
+            home.setClub(homeClubs.get(matchId));
+            home.setMatch(new Match(matchId));
+            homeMatchesToSave.add(home);
+            homeClubMatchMap.put(matchId, home);
+
+            // Away
+            ClubMatch away = new ClubMatch();
+            away.setId(UUID.randomUUID().toString());
+            away.setClub(awayClubs.get(matchId));
+            away.setMatch(new Match(matchId));
+            awayMatchesToSave.add(away);
+            awayClubMatchMap.put(matchId, away);
+        }
+
+        clubMatchCrudOperations.saveAll(homeMatchesToSave);
+        clubMatchCrudOperations.saveAll(awayMatchesToSave);
+
+        // 3. Update des Matchs pour lier les ClubMatchs créés
+        for (Match match : matchesToCreate) {
+            match.setClubPlayingHome(homeClubMatchMap.get(match.getId()));
+            match.setClubPlayingAway(awayClubMatchMap.get(match.getId()));
+        }
+
+        matchCrudOperations.saveAll(matchesToCreate); // update
+
+        return ResponseEntity.ok(matchesToCreate);
     }
+
 
 
     public void assignConsecutiveDates(List<Match> matches, Instant startDate) {

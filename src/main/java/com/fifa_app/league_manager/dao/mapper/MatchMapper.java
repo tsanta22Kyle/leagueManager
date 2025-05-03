@@ -34,7 +34,11 @@ public class MatchMapper implements Function<ResultSet, Match> {
 
         match.setId(matchId);
         match.setClubPlayingHome(homeClub);
+        if(
+                match.getClubPlayingHome()!=null && match.getClubPlayingHome().getClub() !=null
+        ){
         match.setStadium(match.getClubPlayingHome().getClub().getStadium());
+        }
         match.setClubPlayingAway(awayClub);
         match.setMatchDatetime(resultSet.getTimestamp("match_datetime").toInstant());
         match.setActualStatus(Status.valueOf(resultSet.getString("actual_status")));

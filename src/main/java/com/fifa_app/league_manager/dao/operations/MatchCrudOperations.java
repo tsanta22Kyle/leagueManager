@@ -3,6 +3,7 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.MatchMapper;
 import com.fifa_app.league_manager.model.Club;
+import com.fifa_app.league_manager.model.ClubMatch;
 import com.fifa_app.league_manager.model.Match;
 import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class MatchCrudOperations implements CrudOperations<Match> {
     public Match getById(String matchId) {
         Match match = null;
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement statement = conn.prepareStatement("select m.id, m.stadium, m.club_playing_home_id, m.club_playing_away_id, m.match_datetime, m.actual_status" +
+             PreparedStatement statement = conn.prepareStatement("select m.id, m.club_playing_home_id, m.club_playing_away_id, m.match_datetime, m.actual_status,season_id" +
                      " from match m where m.id = ?;")) {
             statement.setString(1, matchId);
 
@@ -48,16 +49,25 @@ public class MatchCrudOperations implements CrudOperations<Match> {
         List<Match> savedMatches = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement statement = conn.prepareStatement("INSERT INTO match (id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status,season_id) VALUES (?,?,?,?,?,?) ON CONFLICT (id) " +
-                     "DO UPDATE SET actual_status=excluded.actual_status RETURNING id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status,season_id");
+                     "DO UPDATE SET actual_status=excluded.actual_status , club_playing_away_id=excluded.club_playing_away_id , club_playing_home_id=excluded.club_playing_home_id RETURNING id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status,season_id");
         ) {
             matchesToSave.forEach(matchToSave -> {
                 try {
                     statement.setString(1, matchToSave.getId());
+                    ClubMatch clubPlayingHome = matchToSave.getClubPlayingHome();
+                    ClubMatch clubPlayingAway = matchToSave.getClubPlayingAway();
+                    if(clubPlayingAway == null || clubPlayingHome == null) {
+                    statement.setString(2,null);
+                    statement.setString(3,null);
+
+                    }else if(clubPlayingAway != null && clubPlayingHome !=null){
+
                     statement.setString(2,matchToSave.getClubPlayingHome().getId());
                     statement.setString(3,matchToSave.getClubPlayingAway().getId());
+                    }
                     statement.setTimestamp(4, Timestamp.from(matchToSave.getMatchDatetime()));
-                    statement.setObject(5, matchToSave.getActualStatus().toString());
-                    statement.setObject(6, matchToSave.getSeason().getId());
+                    statement.setObject(5, matchToSave.getActualStatus(),Types.OTHER);
+                    statement.setString(6, matchToSave.getSeason().getId());
 
                     try (ResultSet rs = statement.executeQuery()) {
                         while (rs.next()) {

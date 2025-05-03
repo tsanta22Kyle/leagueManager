@@ -2,6 +2,7 @@ package com.fifa_app.league_manager.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.Instant;
@@ -23,7 +24,11 @@ public class Match {
 
     //@JsonIgnore
     //private List<PlayerMatch> playerMatches;
-
+    @JsonProperty("stadium")
+    public String getStadium() {
+        if(clubPlayingHome == null) return null;
+        return clubPlayingHome.getClub().getStadium();
+    }
     @JsonIgnore
     private Season season;
 
