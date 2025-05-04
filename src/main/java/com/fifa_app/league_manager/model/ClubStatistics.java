@@ -96,7 +96,7 @@ public class ClubStatistics {
 
         List<ClubMatch> clubMatchesMatchingTheSeasonYearAndFinishedMatch = this.getClub().getClubMatches().stream()
                 .filter(clubMatch -> clubMatch.getMatch().getSeason().getYear().equals(seasonYear))
-                .filter(clubMatch -> clubMatch.getMatch().getActualStatus().equals(Status.FINISHED))
+                .filter(clubMatch -> !clubMatch.getMatch().getActualStatus().equals(Status.NOT_STARTED))
                 .toList();
 
         clubMatchesMatchingTheSeasonYearAndFinishedMatch.forEach(clubMatch -> {
