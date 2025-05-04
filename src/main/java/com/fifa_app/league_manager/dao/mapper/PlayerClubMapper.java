@@ -32,9 +32,6 @@ public class PlayerClubMapper implements Function<ResultSet, PlayerClub> {
             }
 
             String seasonId = resultSet.getString("season_id");
-            String clubId = resultSet.getString("club_id");
-           // Club club = clubOperations.getById(clubId);
-            //playerClub.setClub(club);
 
             playerClub.setId(resultSet.getString("id"));
             playerClub.setJoinDate(resultSet.getDate("join_date").toLocalDate());

@@ -32,6 +32,8 @@ public class MatchService {
     private final PlayerMatchCrudOperations playerMatchCrudOperations;
     private final GoalCrudOperations goalCrudOperations;
     private final PlayerCrudOperations playerCrudOperations;
+    private final PlayerClubCrudOperations playerClubCrudOperations;
+    private final PlayingTimeCrudOperations playingTimeCrudOperations;
 
     public ResponseEntity<Object> createAllMatches(Year seasonYear) {
         Season season = seasonCrudOperations.getByYear(seasonYear);
@@ -111,6 +113,42 @@ public class MatchService {
 
         List<Match> savedMatches = matchCrudOperations.saveAll(matchesToCreate);
         List<MatchRest> restMatches = savedMatches.stream().map(match -> matchRestMapper.toRest(match)).toList();
+
+        savedMatches.forEach(match -> {
+
+            List<PlayerClub> homePlayers =  playerClubCrudOperations.getPlayerClubsByClubIdSeasonId(match.getClubPlayingHome().getClub().getId(),match.getSeason().getId());
+            List<PlayerClub> awayPlayers = playerClubCrudOperations.getPlayerClubsByClubIdSeasonId(match.getClubPlayingAway().getClub().getId(),match.getSeason().getId());
+
+            List<PlayerMatch> allPlayersMatch = new ArrayList<>();
+            List<PlayingTime> playingTimeList = new ArrayList<>();
+            homePlayers.forEach(playerClub -> {
+                PlayerMatch homePlayerMatch = new PlayerMatch();
+                homePlayerMatch.setId(UUID.randomUUID().toString());
+                homePlayerMatch.setPlayer(playerClub.getPlayer());
+                homePlayerMatch.setMatch(match);
+                PlayingTime playingTime = new PlayingTime(UUID.randomUUID().toString(),0,DurationUnit.MINUTE);
+                homePlayerMatch.setPlayingTime(playingTime);
+                playingTimeList.add(playingTime);
+                allPlayersMatch.add(homePlayerMatch);
+            });
+            awayPlayers.forEach(playerClub -> {
+                PlayerMatch awayPlayerMatch = new PlayerMatch();
+                awayPlayerMatch.setId(UUID.randomUUID().toString());
+                System.out.println("player "+playerClub.getPlayer());
+                awayPlayerMatch.setPlayer(playerClub.getPlayer());
+
+                awayPlayerMatch.setMatch(match);
+                PlayingTime playingTime = new PlayingTime(UUID.randomUUID().toString(),0,DurationUnit.MINUTE);
+                awayPlayerMatch.setPlayingTime(playingTime);
+                playingTimeList.add(playingTime);
+                allPlayersMatch.add(awayPlayerMatch);
+            });
+            playingTimeCrudOperations.saveAll(playingTimeList);
+            playerMatchCrudOperations.saveAll(allPlayersMatch);
+
+        });
+
+
         return ResponseEntity.ok(restMatches);
     }
 

@@ -19,6 +19,7 @@ public class ClubMatch {
     private Match match;
     private List<Goal> goals;
 
+
     public int getScore() {
         return this.goals.size();
     }

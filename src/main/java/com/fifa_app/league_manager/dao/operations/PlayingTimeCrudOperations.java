@@ -61,17 +61,16 @@ public class PlayingTimeCrudOperations implements CrudOperations<PlayingTime> {
                     statement.setString(1, entityToSave.getId());
                     statement.setInt(2, entityToSave.getValue());
                     statement.setString(3, entityToSave.getUnit().toString());
-
-                    statement.addBatch();
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        while (resultSet.next()) {
+                            playingTimes.add(playingTimeMapper.apply(resultSet));
+                        }
+                    }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
             });
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    playingTimes.add(playingTimeMapper.apply(resultSet));
-                }
-            }
+
             return playingTimes;
         }
     }

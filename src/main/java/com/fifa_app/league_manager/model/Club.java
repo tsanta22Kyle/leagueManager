@@ -34,6 +34,23 @@ public class Club {
 
     @JsonIgnore
     public Season getActiveSeason() {
+      /*  if (!seasonsParticipation.isEmpty() && this.seasonsParticipation == null) return null;
+        //  System.out.println("seasonsParticipation: " + seasonsParticipation);
+
+        Optional<ClubParticipation> actualPreSeason = seasonsParticipation.stream().min((o1, o2) -> o1.getSeason().getYear().compareTo(o2.getSeason().getYear())).stream().findFirst();
+        ClubParticipation activeSeason = seasonsParticipation
+                .stream()
+                .filter(season -> season.getSeason().getStatus() == Status.STARTED)
+                .findFirst()
+                .orElse(actualPreSeason.orElse(null));
+        if (activeSeason == null) return null;*/
+        return getActiveClubParticipation().getSeason();
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<ClubParticipation> clubParticipations;
+
+    public ClubParticipation getActiveClubParticipation(){
         if (!seasonsParticipation.isEmpty() && this.seasonsParticipation == null) return null;
         //  System.out.println("seasonsParticipation: " + seasonsParticipation);
 
@@ -44,9 +61,7 @@ public class Club {
                 .findFirst()
                 .orElse(actualPreSeason.orElse(null));
         if (activeSeason == null) return null;
-        return activeSeason.getSeason();
+        return activeSeason;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<ClubParticipation> clubParticipations;
 }

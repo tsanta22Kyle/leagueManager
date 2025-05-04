@@ -3,6 +3,7 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.PlayerClubMapper;
 import com.fifa_app.league_manager.model.Club;
+import com.fifa_app.league_manager.model.Player;
 import com.fifa_app.league_manager.model.PlayerClub;
 import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class PlayerClubCrudOperations {
     private final PlayerClubMapper playerClubMapper;
     private final DataSource dataSource;
     private final ClubCrudOperations clubCrudOperations;
+    private final PlayerCrudOperations playerCrudOperations;
 
     public List<PlayerClub> getPlayerClubsByPlayerId(String playerId) {
         List<PlayerClub> playerClubs = new ArrayList<>();
@@ -106,4 +108,28 @@ public class PlayerClubCrudOperations {
     }
 
 
+    public List<PlayerClub> getPlayerClubsByClubIdSeasonId(String clubId,String seasonId) {
+        List<PlayerClub> playerClubs = new ArrayList<>();
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement("select id, player_id, club_id, join_date, end_date ,player_club.number,season_id from player_club where club_id=? and season_id=?");
+        ) {
+
+            ps.setString(1, clubId);
+            ps.setString(2, seasonId);
+            try (ResultSet rs = ps.executeQuery();) {
+                while (rs.next()) {
+                    PlayerClub playerClub = playerClubMapper.apply(rs);
+                    Club club = clubCrudOperations.getById(rs.getString("club_id"));
+                    Player player = playerCrudOperations.getById(rs.getString("player_id"));
+                    playerClub.setClub(club);
+                    playerClub.setPlayer(player);
+                    playerClubs.add(playerClub);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return playerClubs;
+    }
 }

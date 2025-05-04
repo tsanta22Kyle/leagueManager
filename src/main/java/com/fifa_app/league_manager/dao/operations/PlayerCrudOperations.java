@@ -18,7 +18,7 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
 
     private final DataSource dataSource;
     private final PlayerMapper playerMapper;
-    private final PlayerClubCrudOperations playerClubCrudOperations;
+   // private final PlayerClubCrudOperations playerClubCrudOperations;
     private final PlayerMatchCrudOperations playerMatchCrudOperations;
 
 
@@ -37,9 +37,9 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                     Player player = playerMapper.apply(resultSet);
                     String playerId = resultSet.getString("id");
 
-                    List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                   // List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
                     List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
-                    player.setClubs(playerClubs);
+                  //  player.setClubs(playerClubs);
                     player.setMatches(playerMatches);
                     players.add(player);
                 }
@@ -63,9 +63,9 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     player = playerMapper.apply(resultSet);
-                    List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                  //  List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
                     List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
-                    player.setClubs(playerClubs);
+                  //  player.setClubs(playerClubs);
                     player.setMatches(playerMatches);
                 }
             }
@@ -88,9 +88,9 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                     Player player = playerMapper.apply(resultSet);
                     String playerId = resultSet.getString("id");
 
-                    List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                  //  List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
                     List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
-                    player.setClubs(playerClubs);
+                  //  player.setClubs(playerClubs);
                     player.setMatches(playerMatches);
                     players.add(player);
                 }
@@ -123,15 +123,15 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                         playerClub.setPlayer(playerToSave);
                     } );
 
-                    playerClubCrudOperations.saveAll(playerToSave.getClubs());
+                 //   playerClubCrudOperations.saveAll(playerToSave.getClubs());
                     try (ResultSet resultSet = statement.executeQuery()) {
                         while (resultSet.next()) {
                             Player player = playerMapper.apply(resultSet);
                             String playerId = resultSet.getString("id");
 
-                            List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
+                          //  List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
                             List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
-                            player.setClubs(playerClubs);
+                         ///   player.setClubs(playerClubs);
                             player.setMatches(playerMatches);
                             savedPlayers.add(player);
                         }

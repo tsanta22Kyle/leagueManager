@@ -112,7 +112,7 @@ public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
         List<PlayerMatch> playerMatches = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("insert into player_match (id, player_id, match_id, playing_time_id)"
-                     + " values (?, ?, ?, ?) on conflict (match_id) do update set id=excluded.id"
+                     + " values (?, ?, ?, ?) on conflict (id) do update set playing_time_id = excluded.playing_time_id"
                      + " returning id, match_id, player_id, playing_time_id")) {
 
             entities.forEach(entityToSave -> {
@@ -121,17 +121,16 @@ public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
                     statement.setString(2, entityToSave.getPlayer().getId());
                     statement.setString(3, entityToSave.getMatch().getId());
                     statement.setString(4, entityToSave.getPlayingTime().getId());
-
-                    statement.addBatch();
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        while (resultSet.next()) {
+                            playerMatches.add(playerMatchMapper.apply(resultSet));
+                        }
+                    }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
             });
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    playerMatches.add(playerMatchMapper.apply(resultSet));
-                }
-            }
+
             return playerMatches;
         }
     }
