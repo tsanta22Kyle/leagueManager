@@ -12,6 +12,7 @@ public class ScorerRestMapper {
 
     public ScorerRest toRest(Goal goal){
         ScorerRest scorerRest = new ScorerRest();
+        System.out.println("goal "+goal);
         scorerRest.setPlayer(playerRestMapper.toRest(goal.getPlayerMatch().getPlayer()));
         scorerRest.setOwnGoal(goal.isOwnGoal());
         scorerRest.setMinuteOfGoal(goal.getMinuteOfGoal());

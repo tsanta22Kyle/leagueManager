@@ -21,6 +21,7 @@ public class GoalCrudOperations implements CrudOperations<Goal> {
     private final GoalMapper goalMapper;
     private final DataSource dataSource;
 
+
     @Override
     public List<Goal> getAll() {
         throw new UnsupportedOperationException("Not supported yet.");

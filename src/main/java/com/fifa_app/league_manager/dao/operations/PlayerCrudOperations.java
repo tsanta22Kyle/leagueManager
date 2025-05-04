@@ -19,7 +19,7 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
     private final DataSource dataSource;
     private final PlayerMapper playerMapper;
    // private final PlayerClubCrudOperations playerClubCrudOperations;
-    private final PlayerMatchCrudOperations playerMatchCrudOperations;
+  //  private final PlayerMatchCrudOperations playerMatchCrudOperations;
 
 
     @Override
@@ -38,9 +38,9 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                     String playerId = resultSet.getString("id");
 
                    // List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
-                    List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+                 //   List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
                   //  player.setClubs(playerClubs);
-                    player.setMatches(playerMatches);
+                   // player.setMatches(playerMatches);
                     players.add(player);
                 }
             }
@@ -64,9 +64,9 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                 while (resultSet.next()) {
                     player = playerMapper.apply(resultSet);
                   //  List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
-                    List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+                   // List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
                   //  player.setClubs(playerClubs);
-                    player.setMatches(playerMatches);
+                 //   player.setMatches(playerMatches);
                 }
             }
             return player;
@@ -89,9 +89,9 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
                     String playerId = resultSet.getString("id");
 
                   //  List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
-                    List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+                 //   List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
                   //  player.setClubs(playerClubs);
-                    player.setMatches(playerMatches);
+                  //  player.setMatches(playerMatches);
                     players.add(player);
                 }
             }

@@ -3,6 +3,7 @@ package com.fifa_app.league_manager.dao.operations;
 
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.PlayerMatchMapper;
+import com.fifa_app.league_manager.model.Player;
 import com.fifa_app.league_manager.model.PlayerMatch;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
     private final DataSource dataSource;
     private final PlayerMatchMapper playerMatchMapper;
-
+    private  final PlayerCrudOperations playerCrudOperations;
     @Override
     public List<PlayerMatch> getAll() {
         return List.of();
@@ -38,7 +39,10 @@ public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    playerMatch = playerMatchMapper.apply(resultSet);
+                    PlayerMatch playerM = playerMatchMapper.apply(resultSet);
+                    Player player = playerCrudOperations.getById(resultSet.getString("player_id"));
+                    playerM.setPlayer(player);
+                    playerMatch = playerM;
                 }
             }
             return playerMatch;
@@ -58,7 +62,10 @@ public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    playerMatches.add(playerMatchMapper.apply(resultSet));
+                    PlayerMatch playerMatch = playerMatchMapper.apply(resultSet);
+                    Player player = playerCrudOperations.getById(resultSet.getString("player_id"));
+                    playerMatch.setPlayer(player);
+                    playerMatches.add(playerMatch);
                 }
             }
             return playerMatches;
@@ -78,7 +85,10 @@ public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    playerMatches.add(playerMatchMapper.apply(resultSet));
+                    PlayerMatch playerMatch = playerMatchMapper.apply(resultSet);
+                    Player player = playerCrudOperations.getById(resultSet.getString("player_id"));
+                    playerMatch.setPlayer(player);
+                    playerMatches.add(playerMatch);
                 }
             }
             return playerMatches;
@@ -99,7 +109,10 @@ public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    playerMatches.add(playerMatchMapper.apply(resultSet));
+                    PlayerMatch playerMatch = playerMatchMapper.apply(resultSet);
+                    Player player = playerCrudOperations.getById(resultSet.getString("player_id"));
+                    playerMatch.setPlayer(player);
+                    playerMatches.add(playerMatch);
                 }
             }
             return playerMatches;
