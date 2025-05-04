@@ -29,7 +29,7 @@ public class ClubCrudOperations implements CrudOperations<Club> {
         List<Club> clubs = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("select c.id, c.name, c.acronym, c.year_creation, c.stadium, cc.coach_id" +
-                     " from club c inner join club_coach cc on cc.team_id = c.id;")) {
+                     " from club c inner join club_coach cc on cc.team_id = c.id order by id;")) {
             /*
             statement.setInt(1, pageSize);
             statement.setInt(2, pageSize * (page - 1));
@@ -79,7 +79,7 @@ public class ClubCrudOperations implements CrudOperations<Club> {
         List<Club> clubList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("insert into club (id, name, acronym, year_creation, stadium)"
-                     + " values (?, ?, ?, ?, ?) on conflict (name) do update set name=excluded.name,"
+                     + " values (?, ?, ?, ?, ?) on conflict (id) do update set name=excluded.name,"
                      + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium"
                      + " returning id, name, stadium, year_creation, acronym")) {
 
@@ -104,6 +104,7 @@ public class ClubCrudOperations implements CrudOperations<Club> {
 
                     ClubCoach clubCoach = clubCoachCrudOperations.findByClubId(savedClub.getId());
                     Coach coach = coachCrudOperations.getCoachById(clubCoach.getCoach().getId());
+
                     // List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(resultSet.getString("id"));
                     // savedClub.setClubParticipations(clubParticipations);
                     savedClub.setCoach(coach);
@@ -115,8 +116,12 @@ public class ClubCrudOperations implements CrudOperations<Club> {
     }
 
     private void saveCoachAndClubCoach(Club entityToSave) {
-        System.out.println(entityToSave.getCoach());
         Coach coach = coachCrudOperations.save(entityToSave.getCoach());
+        Club clubCreated = this.getById(entityToSave.getId());
+
+        if (clubCreated == null) {
+            System.out.println(entityToSave.getName() + " is null.");
+        }
 
         ClubCoach clubCoach = new ClubCoach();
         clubCoach.setId(UUID.randomUUID().toString());

@@ -29,7 +29,7 @@ public class MatchCrudOperations implements CrudOperations<Match> {
     public List<Match> getAll() {
         List<Match> matches = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select id, stadium, club_playing_home_id, club_playing_away_id, match_datetime, actual_status, season_id" +
+             PreparedStatement statement = connection.prepareStatement("select id, club_playing_home_id, club_playing_away_id, match_datetime, actual_status, season_id" +
                      " from match;")) {
             /*
             statement.setInt(1, pageSize);
