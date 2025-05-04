@@ -19,4 +19,11 @@ public class PlayerMatch {
     private PlayingTime playingTime;
 
     private List<Goal> goals;
+
+    public PlayerMatch(String string, Player player, Match match, PlayingTime pt) {
+        this.id = string;
+        this.player = player;
+        this.match = match;
+        this.playingTime = pt;
+    }
 }
