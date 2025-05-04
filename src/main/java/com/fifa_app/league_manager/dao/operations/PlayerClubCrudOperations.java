@@ -51,59 +51,45 @@ public class PlayerClubCrudOperations {
 
     public List<PlayerClub> saveAll(List<PlayerClub> playerClubs) {
         List<PlayerClub> playerClubSaved = new ArrayList<>();
+        String sql = "INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number, season_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (id) DO UPDATE SET end_date = excluded.end_date, season_id = excluded.season_id";
+
         try (
                 Connection conn = dataSource.getConnection();
-
-                PreparedStatement statement = conn.prepareStatement("INSERT INTO player_club(id, player_id, club_id, join_date, end_date, number,season_id) VALUES (?,?,?,?,?,?,?)" +
-                        " ON CONFLICT (id) " +
-                        "DO UPDATE SET end_date=excluded.end_date,season_id=excluded.season_id RETURNING  id,number,end_date,club_id,player_id,join_date,season_id")
-                )
-        {
-            playerClubs.forEach(playerClubToSave -> {
-                try {
-                    LocalDate endDate = playerClubToSave.getEndDate();
-                statement.setString(1,playerClubToSave.getId());
-                statement.setString(2,playerClubToSave.getPlayer().getId());
-                statement.setString(3,playerClubToSave.getClub().getId());
-                statement.setDate(4, Date.valueOf(playerClubToSave.getJoinDate()));
-                if(endDate != null){
-
-                statement.setDate(5,Date.valueOf(playerClubToSave.getEndDate()));
+                PreparedStatement statement = conn.prepareStatement(sql)
+        ) {
+            for (PlayerClub pc : playerClubs) {
+                statement.setString(1, pc.getId());
+                statement.setString(2, pc.getPlayer().getId());
+                statement.setString(3, pc.getClub().getId());
+                statement.setDate(4, Date.valueOf(pc.getJoinDate()));
+                if (pc.getEndDate() != null) {
+                    statement.setDate(5, Date.valueOf(pc.getEndDate()));
+                } else {
+                    statement.setNull(5, Types.DATE);
                 }
-                if (endDate == null) {
-                    //System.out.println("end date is null");
-                    statement.setDate(5,null);
+                statement.setInt(6, pc.getNumber());
+                if (pc.getSeason() != null) {
+                    statement.setString(7, pc.getSeason().getId());
+                } else {
+                    statement.setNull(7, Types.VARCHAR);
                 }
-                statement.setInt(6,playerClubToSave.getNumber());
+                statement.addBatch();
+            }
 
-                       // System.out.println("season id : "+playerClubToSave.getSeason().getId());
-                    if(
-                            playerClubToSave.getSeason()!=null
-                    ){
+            statement.executeBatch();
 
-                        statement.setString(7,playerClubToSave.getSeason().getId());
-                    }else{
-                        statement.setString(7,null);
-                    }
-                try(ResultSet rs = statement.executeQuery()){
-                    while(rs.next()){
-                        PlayerClub playerClub = playerClubMapper.apply(rs);
-                        Club club = clubCrudOperations.getById(rs.getString("club_id"));
-                        playerClub.setClub(club);
-                        playerClubSaved.add(playerClub);
-                    }
-                }catch (SQLException e){
-                    throw new ServerException(e.getMessage());
-                }
+            for (PlayerClub pc : playerClubs) {
+                Club club = clubCrudOperations.getById(pc.getClub().getId());
+                pc.setClub(club);
+                playerClubSaved.add(pc);
+            }
 
-                }catch (SQLException e){
-                    throw new ServerException(e.getMessage());
-                }
-            });
-
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new ServerException(e.getMessage());
         }
+
         return playerClubSaved;
     }
 

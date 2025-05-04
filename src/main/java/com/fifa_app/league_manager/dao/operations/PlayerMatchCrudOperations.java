@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -109,29 +110,49 @@ public class PlayerMatchCrudOperations implements CrudOperations<PlayerMatch> {
 
     @SneakyThrows
     public List<PlayerMatch> saveAll(List<PlayerMatch> entities) {
-        List<PlayerMatch> playerMatches = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("insert into player_match (id, player_id, match_id, playing_time_id)"
-                     + " values (?, ?, ?, ?) on conflict (id) do update set playing_time_id = excluded.playing_time_id"
-                     + " returning id, match_id, player_id, playing_time_id")) {
+        List<PlayerMatch> saved = new ArrayList<>();
 
-            entities.forEach(entityToSave -> {
-                try {
-                    statement.setString(1, entityToSave.getId());
-                    statement.setString(2, entityToSave.getPlayer().getId());
-                    statement.setString(3, entityToSave.getMatch().getId());
-                    statement.setString(4, entityToSave.getPlayingTime().getId());
-                    try (ResultSet resultSet = statement.executeQuery()) {
-                        while (resultSet.next()) {
-                            playerMatches.add(playerMatchMapper.apply(resultSet));
+        String sql = "INSERT INTO player_match (id, player_id, match_id, playing_time_id) " +
+                "VALUES (?, ?, ?, ?) " +
+                "ON CONFLICT (id) DO UPDATE SET playing_time_id = excluded.playing_time_id";
+
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            for (PlayerMatch pm : entities) {
+                statement.setString(1, pm.getId());
+                statement.setString(2, pm.getPlayer().getId());
+                statement.setString(3, pm.getMatch().getId());
+                statement.setString(4, pm.getPlayingTime().getId());
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+
+            // Optionnel : re-fetch
+            List<String> ids = entities.stream().map(PlayerMatch::getId).toList();
+            if (!ids.isEmpty()) {
+                String inClause = ids.stream().map(id -> "?").collect(Collectors.joining(","));
+                String selectSql = "SELECT id, match_id, player_id, playing_time_id FROM player_match WHERE id IN (" + inClause + ")";
+                try (
+                        PreparedStatement selectStatement = connection.prepareStatement(selectSql)
+                ) {
+                    for (int i = 0; i < ids.size(); i++) {
+                        selectStatement.setString(i + 1, ids.get(i));
+                    }
+                    try (ResultSet rs = selectStatement.executeQuery()) {
+                        while (rs.next()) {
+                            saved.add(playerMatchMapper.apply(rs));
                         }
                     }
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
                 }
-            });
+            }
 
-            return playerMatches;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
+
+        return saved;
     }
 }

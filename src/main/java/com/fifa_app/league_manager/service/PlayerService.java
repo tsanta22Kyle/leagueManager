@@ -36,12 +36,17 @@ public class PlayerService {
                 throw new ClientException("minimum age is greater than maximum age");
             }
         List<Player> players = playerCrudOperations.getAll();
-            System.out.println("players: " + players);
+            players.forEach(player -> {
+                List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(player.getId());
+                player.setClubs(playerClubs);
+            });
+            //System.out.println("players: " + players);
         List<Player> filteredPlayers = players.stream()
                 .filter(player -> player.getActualClub()!=null)
                 .filter(player -> player.getActualClub().getName().toLowerCase().contains(clubName.toLowerCase()))
                 .filter(player -> player.getAge()>ageMin).filter(player -> player.getAge()<ageMax)
                 .filter(player -> player.getName().toLowerCase().contains(name.toLowerCase())).toList();
+
         return ResponseEntity.ok(filteredPlayers);
         }catch (Exception e){
             throw new RuntimeException(e);

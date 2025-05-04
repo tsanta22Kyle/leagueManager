@@ -103,48 +103,38 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
 
     public List<Player> saveAll(List<Player> playersToSave) {
         List<Player> savedPlayers = new ArrayList<>();
+
+        String sql = "INSERT INTO player(id, name, position, country, age, preferred_number) " +
+                "VALUES (?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (id) DO UPDATE SET name = excluded.name, position = excluded.position, " +
+                "country = excluded.country, age = excluded.age, preferred_number = excluded.preferred_number";
+
         try (
                 Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement("INSERT INTO player(id, name, position, country, age,preferred_number) VALUES (?,?,?,?,?,?) ON CONFLICT (id) " +
-                        "DO UPDATE SET name=excluded.name ,position=excluded.position,country=excluded.country,age=excluded.age ,preferred_number=excluded.preferred_number " +
-                        "RETURNING id ,name,position,country,age,preferred_number")
+                PreparedStatement statement = conn.prepareStatement(sql)
         ) {
+            for (Player p : playersToSave) {
+                statement.setString(1, p.getId());
+                statement.setString(2, p.getName());
+                statement.setObject(3, p.getPosition().toString(), Types.OTHER);
+                statement.setString(4, p.getCountry());
+                statement.setInt(5, p.getAge());
+                statement.setInt(6, p.getPreferredNumber());
 
-            playersToSave.forEach(playerToSave -> {
-                try {
-                    statement.setString(1, playerToSave.getId());
-                    statement.setString(2, playerToSave.getName());
-                    statement.setObject(3, playerToSave.getPosition().toString(), Types.OTHER);
-                    statement.setString(4, playerToSave.getCountry());
-                    statement.setInt(5, playerToSave.getAge());
-                    statement.setInt(6, playerToSave.getPreferredNumber());
-                    // System.out.println("clubs : "+playerToSave.getClubs());
-                    playerToSave.getClubs().forEach(playerClub -> {
-                        playerClub.setPlayer(playerToSave);
-                    } );
+                statement.addBatch();
 
-                 //   playerClubCrudOperations.saveAll(playerToSave.getClubs());
-                    try (ResultSet resultSet = statement.executeQuery()) {
-                        while (resultSet.next()) {
-                            Player player = playerMapper.apply(resultSet);
-                            String playerId = resultSet.getString("id");
+                // Si le joueur a des PlayerClub liés
+                p.getClubs().forEach(pc -> pc.setPlayer(p));
+            }
 
-                          //  List<PlayerClub> playerClubs = playerClubCrudOperations.getPlayerClubsByPlayerId(playerId);
-                            List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
-                         ///   player.setClubs(playerClubs);
-                            player.setMatches(playerMatches);
-                            savedPlayers.add(player);
-                        }
-                    }
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            statement.executeBatch(); // Batch 💥
+
+            // Pas besoin de re-fetch les players si on fait juste du save
+            return playersToSave;
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return savedPlayers;
     }
 
 

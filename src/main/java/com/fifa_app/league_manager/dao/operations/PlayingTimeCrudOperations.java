@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -50,28 +51,47 @@ public class PlayingTimeCrudOperations implements CrudOperations<PlayingTime> {
 
     @SneakyThrows
     public List<PlayingTime> saveAll(List<PlayingTime> entities) {
-        List<PlayingTime> playingTimes = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("insert into playing_time (id, value, unit)"
-                     + " values (?, ?, cast(? as unit)) on conflict (id) do nothing"
-                     + " returning id, value, unit")) {
+        List<PlayingTime> saved = new ArrayList<>();
 
-            entities.forEach(entityToSave -> {
-                try {
-                    statement.setString(1, entityToSave.getId());
-                    statement.setInt(2, entityToSave.getValue());
-                    statement.setString(3, entityToSave.getUnit().toString());
-                    try (ResultSet resultSet = statement.executeQuery()) {
-                        while (resultSet.next()) {
-                            playingTimes.add(playingTimeMapper.apply(resultSet));
+        String sql = "INSERT INTO playing_time (id, value, unit) VALUES (?, ?, cast(? as unit)) " +
+                "ON CONFLICT (id) DO NOTHING";
+
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            for (PlayingTime pt : entities) {
+                statement.setString(1, pt.getId());
+                statement.setInt(2, pt.getValue());
+                statement.setString(3, pt.getUnit().toString());
+                statement.addBatch();
+            }
+
+            statement.executeBatch();
+
+            // Optionnel : re-fetch des enregistrements insérés
+            List<String> ids = entities.stream().map(PlayingTime::getId).toList();
+            if (!ids.isEmpty()) {
+                String inClause = ids.stream().map(id -> "?").collect(Collectors.joining(","));
+                String selectSql = "SELECT id, value, unit FROM playing_time WHERE id IN (" + inClause + ")";
+                try (
+                        PreparedStatement selectStatement = connection.prepareStatement(selectSql)
+                ) {
+                    for (int i = 0; i < ids.size(); i++) {
+                        selectStatement.setString(i + 1, ids.get(i));
+                    }
+                    try (ResultSet rs = selectStatement.executeQuery()) {
+                        while (rs.next()) {
+                            saved.add(playingTimeMapper.apply(rs));
                         }
                     }
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
                 }
-            });
+            }
 
-            return playingTimes;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
+
+        return saved;
     }
 }

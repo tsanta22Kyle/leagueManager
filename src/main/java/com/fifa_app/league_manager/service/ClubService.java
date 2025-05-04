@@ -109,6 +109,9 @@ public class ClubService {
 
 
             Club existingClub = clubCrudOperations.getById(clubId);
+            List<ClubParticipation> existingClubParticipations = clubParticipationCrudOperations.getManyByClubId(existingClub.getId());
+            existingClub.setSeasonsParticipation(existingClubParticipations);
+            System.out.println("season existing club "+existingClub.getSeasonsParticipation());
             if (existingClub == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, id = " + clubId + " does not exist.");
             }
@@ -132,7 +135,7 @@ public class ClubService {
                     player.getClubs().forEach(playerClub -> {
                         List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(playerClub.getClub().getId());
                         playerClub.getClub().setClubParticipations(clubParticipations);
-                        System.out.println(" popo : " + playerClub.getClub().getClubParticipations());
+                       // System.out.println(" popo : " + playerClub.getClub().getClubParticipations());
                     });
                 });
                 underContractPlayers.addAll(
@@ -150,7 +153,7 @@ public class ClubService {
             if (
                     existingClub.getActiveSeason() != null && existingClub.getActiveSeason().getStatus() == Status.STARTED
             ) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Season already started");
+                return ResponseEntity.badRequest().body("Season already started");
             } else {
                 List<PlayerClub> endContractsToSave = new ArrayList<>();
                 existingPlayers.stream()
@@ -175,7 +178,7 @@ public class ClubService {
                             endContract.setEndDate(LocalDate.now());
                             endContract.setNumber(player.getPreferredNumber());
                             endContract.setSeason(existingClub.getActiveSeason());
-                            System.out.println("active season : " + existingClub.getActiveSeason());
+                          //  System.out.println("active season : " + existingClub.getActiveSeason());
                             endContract.setJoinDate(LocalDate.now());
 
                             playerClubCrudOperations.saveAll(List.of(endContract));

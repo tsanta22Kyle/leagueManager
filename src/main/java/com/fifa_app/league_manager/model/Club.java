@@ -44,6 +44,7 @@ public class Club {
                 .findFirst()
                 .orElse(actualPreSeason.orElse(null));
         if (activeSeason == null) return null;*/
+        if(getActiveClubParticipation() == null) return null;
         return getActiveClubParticipation().getSeason();
     }
 
@@ -61,6 +62,7 @@ public class Club {
                 .findFirst()
                 .orElse(actualPreSeason.orElse(null));
         if (activeSeason == null) return null;
+      //  System.out.println("activeSeason: " + activeSeason);
         return activeSeason;
     }
 
