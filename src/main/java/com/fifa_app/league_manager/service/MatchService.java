@@ -2,6 +2,7 @@ package com.fifa_app.league_manager.service;
 
 import com.fifa_app.league_manager.dao.operations.*;
 import com.fifa_app.league_manager.endpoint.mapper.MatchRestMapper;
+import com.fifa_app.league_manager.endpoint.mapper.ScorerRestMapper;
 import com.fifa_app.league_manager.endpoint.rest.CreateGoal;
 import com.fifa_app.league_manager.endpoint.rest.MatchRest;
 import com.fifa_app.league_manager.endpoint.rest.UpdateStatus;
@@ -34,6 +35,7 @@ public class MatchService {
     private final PlayerCrudOperations playerCrudOperations;
     private final PlayerClubCrudOperations playerClubCrudOperations;
     private final PlayingTimeCrudOperations playingTimeCrudOperations;
+    private final ScorerRestMapper scorerRestMapper;
 
     public ResponseEntity<Object> createAllMatches(Year seasonYear) {
         Season season = seasonCrudOperations.getByYear(seasonYear);
@@ -284,6 +286,8 @@ public class MatchService {
     public ResponseEntity<Object> addGoals(String id, List<CreateGoal> goals) {
 
         Match match = matchCrudOperations.getById(id);
+        List<Goal> awayGoals = new ArrayList<>();
+        List<Goal> homeGoals = new ArrayList<>();
         if (match == null) {
             return ResponseEntity.badRequest().body("match not found");
         }
@@ -342,6 +346,11 @@ public class MatchService {
                     goalToSave.setClubMatch(clubMatch);
                     playerMatch.setGoals(List.of());
                     goalsToSave.add(goalToSave);
+                    if(goalToSave.getClubMatch().getId().equals(match.getClubPlayingHome().getId())){
+                        homeGoals.add(goalToSave);
+                    }if(goalToSave.getClubMatch().getId().equals(match.getClubPlayingAway().getId())){
+                        awayGoals.add(goalToSave);
+                    }
                 }
             }
         });
@@ -361,8 +370,13 @@ public class MatchService {
             clubParticipationCrudOperations.save(clubParticipation);
         });*/
        // Match updatedMatch = matchCrudOperations.getById(id);
+        match.getClubPlayingAway().setGoals(awayGoals);
+        match.getClubPlayingHome().setGoals(homeGoals);
+        MatchRest matchRest = matchRestMapper.toRest(match);
 
-        return ResponseEntity.ok(savedGoals);
+
+
+        return ResponseEntity.ok(matchRest);
 
     }
 }

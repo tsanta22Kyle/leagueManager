@@ -12,6 +12,6 @@ public class ClubMatchRest {
     private String name;
     private String acronym;
     private int score;
-    private List<Goal> scorers = new ArrayList<>();
+    private List<ScorerRest> scorers = new ArrayList<>();
     // scorers
 }
