@@ -173,7 +173,7 @@ public class MatchService {
     public ResponseEntity<Object> changeMatchStatus(String id, UpdateStatus status) {
         Status matchStatus = status.getStatus();
         Match match = matchCrudOperations.getById(id);
-        System.out.println("goals  "+match.getClubPlayingHome().getClub().getId());
+        System.out.println("goals  " + match.getClubPlayingHome().getClub().getId());
         String homeClubId = match.getClubPlayingHome().getClub().getId();
         String matchId = match.getId();
 
@@ -223,7 +223,7 @@ public class MatchService {
                 losingGains.setConcededGoals(losingGains.getConcededGoals() + winner.getScore());
                 losingGains.setScoredGoals(losingGains.getScoredGoals() + losing.getScore());
                 losingGains.setLosses(losingGains.getLosses() + 1);
-                    losingGains.setClub(losing.getClub());
+                losingGains.setClub(losing.getClub());
                 List<ClubParticipation> savedStats = clubParticipationCrudOperations.saveAll(List.of(winnerGains, losingGains));
                 System.out.println("saved stats win home :" + savedStats);
 
@@ -283,32 +283,32 @@ public class MatchService {
             }
             Match updatedMatch = matchCrudOperations.saveAll(List.of(match)).get(0);
 
-            List<PlayerMatch>  playerMatches =  playerMatchCrudOperations.getPlayerMatchesByMatchId(matchId);
+            List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByMatchId(matchId);
 
             playerMatches.forEach(playerMatch -> {
                 List<Goal> playerGoals = goalCrudOperations.getByPlayerMatchId(playerMatch.getId());
                 playerGoals.forEach(goal -> {
                     goal.setPlayerMatch(playerMatch);
                 });
-                System.out.println(playerMatch.getId()+" goals  "+playerGoals);
-                System.out.println("my club "+playerMatch.getPlayer().getActualClub());
+                System.out.println(playerMatch.getId() + " goals  " + playerGoals);
+                System.out.println("my club " + playerMatch.getPlayer().getActualClub());
 
             });
             playerMatches.forEach(playerMatch -> {
-            updatedMatch.getClubPlayingHome().getGoals().forEach(goal -> {
-                if(playerMatch.getGoals().contains(goal)) {
-                goal.setPlayerMatch(playerMatch);
-                }
-            });
-            updatedMatch.getClubPlayingAway().getGoals().forEach(goal -> {
-                if(playerMatch.getGoals().contains(goal)) {
-                goal.setPlayerMatch(playerMatch);
-                }
-            });
+                updatedMatch.getClubPlayingHome().getGoals().forEach(goal -> {
+                    if (playerMatch.getGoals().contains(goal)) {
+                        goal.setPlayerMatch(playerMatch);
+                    }
+                });
+                updatedMatch.getClubPlayingAway().getGoals().forEach(goal -> {
+                    if (playerMatch.getGoals().contains(goal)) {
+                        goal.setPlayerMatch(playerMatch);
+                    }
+                });
             });
 
-            updatedMatch.getClubPlayingHome().setGoals(updatedMatch.getClubPlayingHome().getGoals().stream().filter(goal -> goal.getPlayerMatch()!=null).toList());
-            updatedMatch.getClubPlayingAway().setGoals(updatedMatch.getClubPlayingAway().getGoals().stream().filter(goal -> goal.getPlayerMatch()!=null).toList());
+            updatedMatch.getClubPlayingHome().setGoals(updatedMatch.getClubPlayingHome().getGoals().stream().filter(goal -> goal.getPlayerMatch() != null).toList());
+            updatedMatch.getClubPlayingAway().setGoals(updatedMatch.getClubPlayingAway().getGoals().stream().filter(goal -> goal.getPlayerMatch() != null).toList());
 
             MatchRest updatedMatchRest = matchRestMapper.toRest(updatedMatch);
 
@@ -343,21 +343,21 @@ public class MatchService {
 
         goals.forEach(goal -> {
             List<PlayerMatch> isInTheMatch = playerMatchCrudOperations.getPlayerMatchesByPlayerIdAndMatchId(goal.getScorerId(), id);
-            ClubMatch clubMatch = clubMatchCrudOperations.getByClubIdAndMatchId(goal.getClubId(),id);
-            Player player = playerCrudOperations.getById(goal.getScorerId()) ;
+            ClubMatch clubMatch = clubMatchCrudOperations.getByClubIdAndMatchId(goal.getClubId(), id);
+            Player player = playerCrudOperations.getById(goal.getScorerId());
             List<PlayerClub> playerClubList = playerClubCrudOperations.getPlayerClubsByPlayerId(player.getId());
             player.setClubs(playerClubList);
             if (!isInTheMatch.isEmpty()) {
 
                 PlayerMatch playerMatch = isInTheMatch.get(0);
                 playerMatch.setPlayer(player);
-                System.out.println("player match "+playerMatch.getPlayer());
+                System.out.println("player match " + playerMatch.getPlayer());
 
                 if (playerMatch != null) {
                     Goal goalToSave = new Goal();
                     goalToSave.setMinuteOfGoal(goal.getMinuteOfGoal());
-                    System.out.println("club in goal "+goal.getClubId());
-                    System.out.println("player's club "+player.getActualClub().getId());
+                    System.out.println("club in goal " + goal.getClubId());
+                    System.out.println("player's club " + player.getActualClub().getId());
 
                     if (!goal.getClubId().equals(player.getActualClub().getId())) {
                         goalToSave.setOwnGoal(true);
@@ -370,19 +370,20 @@ public class MatchService {
                     goalToSave.setClubMatch(clubMatch);
                     playerMatch.setGoals(List.of());
                     goalsToSave.add(goalToSave);
-                    if(goalToSave.getClubMatch().getId().equals(match.getClubPlayingHome().getId())){
+                    if (goalToSave.getClubMatch().getId().equals(match.getClubPlayingHome().getId())) {
                         homeGoals.add(goalToSave);
-                    }if(goalToSave.getClubMatch().getId().equals(match.getClubPlayingAway().getId())){
+                    }
+                    if (goalToSave.getClubMatch().getId().equals(match.getClubPlayingAway().getId())) {
                         awayGoals.add(goalToSave);
                     }
                 }
             }
         });
-        if(goalsToSave.stream().filter(goal -> goal.getClubMatch() == null).count() > 0) {
+        if (goalsToSave.stream().filter(goal -> goal.getClubMatch() == null).count() > 0) {
             return ResponseEntity.badRequest().body("club not exists");
         }
         List<Goal> savedGoals = goalCrudOperations.saveAll(goalsToSave);
-        if(goalsToSave.size()==0){
+        if (goalsToSave.size() == 0) {
             return ResponseEntity.badRequest().body("goals not saved");
         }
      /*   goalsToSave.forEach(goal -> {
@@ -393,11 +394,25 @@ public class MatchService {
             clubParticipation.setClub(goal.getClubMatch().getClub());
             clubParticipationCrudOperations.save(clubParticipation);
         });*/
-       // Match updatedMatch = matchCrudOperations.getById(id);
-        match.getClubPlayingAway().setGoals(awayGoals);
-        match.getClubPlayingHome().setGoals(homeGoals);
+        // Match updatedMatch = matchCrudOperations.getById(id);
+        List<Goal> finalAwayGoals = goalCrudOperations.getByClubMatchId(match.getClubPlayingAway().getId());
+        List<Goal> finalHomeGoals = goalCrudOperations.getByClubMatchId(match.getClubPlayingHome().getId());
+        List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByMatchId(id);
+        playerMatches.forEach(playerMatch -> {
+            finalAwayGoals.forEach(goal -> {
+                if (playerMatch.getGoals().contains(goal)) {
+                    goal.setPlayerMatch(playerMatch);
+                }
+            });
+            finalHomeGoals.forEach(goal -> {
+                if (playerMatch.getGoals().contains(goal)) {
+                    goal.setPlayerMatch(playerMatch);
+                }
+            });
+        });
+        match.getClubPlayingAway().setGoals(finalAwayGoals);
+        match.getClubPlayingHome().setGoals(finalHomeGoals);
         MatchRest matchRest = matchRestMapper.toRest(match);
-
 
 
         return ResponseEntity.ok(matchRest);
