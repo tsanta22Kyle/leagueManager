@@ -189,6 +189,7 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
             try (ResultSet resultSet = ps.executeQuery()) {
                 if (resultSet.next()) {
                     clubParticipation = clubParticipationMapper.apply(resultSet);
+                    clubParticipation.setClub(clubCrudOperations.getById(resultSet.getString("club_id")));
                 }
             }
         }catch (SQLException e){

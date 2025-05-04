@@ -19,11 +19,14 @@ CREATE TABLE if not exists match
     season_id            varchar,
     CONSTRAINT season_fk
         FOREIGN KEY (season_id)
-            REFERENCES season (id),
-    CONSTRAINT check_clubs_differents
-        CHECK (club_playing_home_id IS DISTINCT FROM club_playing_away_id)
+            REFERENCES season (id)
 );
 
+/*
+CONSTRAINT check_clubs_differents
+        CHECK (club_playing_home_id IS DISTINCT FROM club_playing_away_id)
+
+ */
 
 ALTER TABLE match
     ADD CONSTRAINT fk_home_club
