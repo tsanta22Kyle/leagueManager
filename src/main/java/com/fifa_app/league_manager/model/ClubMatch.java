@@ -19,6 +19,12 @@ public class ClubMatch {
     private Match match;
     private List<Goal> goals;
 
+    public ClubMatch(String string, Club club, Match match) {
+        this.id = string;
+        this.club = club;
+        this.match = match;
+    }
+
 
     public int getScore() {
         return this.goals.size();

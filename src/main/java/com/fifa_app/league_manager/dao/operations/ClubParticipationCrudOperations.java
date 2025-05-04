@@ -131,7 +131,7 @@ public class ClubParticipationCrudOperations implements CrudOperations<ClubParti
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("insert into club_participation (id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets)"
                     + " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    + " on conflict (id) do nothing"
+                    + " on conflict (id) do update set points=excluded.points, wins=excluded.wins , draws=excluded.draws,losses=excluded.losses,scored_goals=excluded.scored_goals,conceded_goals=excluded.conceded_goals,clean_sheets=excluded.clean_sheets"
                     + " returning id, club_id, season_id, points, wins, draws, losses, scored_goals, conceded_goals, clean_sheets")) {
                 try {
                     String id = entity.getId() == null ? UUID.randomUUID().toString() : entity.getId();

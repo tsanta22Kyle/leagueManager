@@ -106,7 +106,9 @@ public class ClubService {
 
     public ResponseEntity<Object> changePlayers(String clubId, List<CreateOrUpdatePlayer> playersToSave) {
         try {
-
+            if(playersToSave.size()<3){
+                return ResponseEntity.badRequest().body("a club should be composed by 3 or more players");
+            }
 
             Club existingClub = clubCrudOperations.getById(clubId);
             List<ClubParticipation> existingClubParticipations = clubParticipationCrudOperations.getManyByClubId(existingClub.getId());
