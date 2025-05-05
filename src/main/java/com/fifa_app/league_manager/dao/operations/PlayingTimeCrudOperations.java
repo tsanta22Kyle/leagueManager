@@ -54,7 +54,7 @@ public class PlayingTimeCrudOperations implements CrudOperations<PlayingTime> {
         List<PlayingTime> saved = new ArrayList<>();
 
         String sql = "INSERT INTO playing_time (id, value, unit) VALUES (?, ?, cast(? as unit)) " +
-                "ON CONFLICT (id) DO NOTHING";
+                "ON CONFLICT (id) DO UPDATE set value=excluded.value , unit=excluded.unit ";
 
         try (
                 Connection connection = dataSource.getConnection();
@@ -69,7 +69,6 @@ public class PlayingTimeCrudOperations implements CrudOperations<PlayingTime> {
 
             statement.executeBatch();
 
-            // Optionnel : re-fetch des enregistrements insérés
             List<String> ids = entities.stream().map(PlayingTime::getId).toList();
             if (!ids.isEmpty()) {
                 String inClause = ids.stream().map(id -> "?").collect(Collectors.joining(","));
