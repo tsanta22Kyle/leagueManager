@@ -15,4 +15,5 @@ public class Goal {
     private boolean ownGoal;
     private int minuteOfGoal;
     private ClubMatch clubMatch;
+    private Season season;
 }

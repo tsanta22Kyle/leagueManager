@@ -27,7 +27,7 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
 
         List<Player> players = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select id, name, position, country, age,preferred_number from player ")) {
+             PreparedStatement statement = connection.prepareStatement("select  player.id, player.name, player.position, player.country, player.age, player.preferred_number from player join public.player_club pc on player.id = pc.player_id where end_date is null")) {
             /*
             statement.setInt(1, pageSize);
             statement.setInt(2, pageSize * (page - 1));
@@ -123,13 +123,11 @@ public class PlayerCrudOperations implements CrudOperations<Player> {
 
                 statement.addBatch();
 
-                // Si le joueur a des PlayerClub liés
                 p.getClubs().forEach(pc -> pc.setPlayer(p));
             }
 
-            statement.executeBatch(); // Batch 💥
+            statement.executeBatch();
 
-            // Pas besoin de re-fetch les players si on fait juste du save
             return playersToSave;
 
         } catch (SQLException e) {

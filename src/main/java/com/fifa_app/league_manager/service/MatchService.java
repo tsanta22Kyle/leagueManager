@@ -368,6 +368,7 @@ public class MatchService {
                     goalToSave.setPlayerMatch(playerMatch);
                     goalToSave.setId(UUID.randomUUID().toString());
                     goalToSave.setClubMatch(clubMatch);
+                    goalToSave.setSeason(match.getSeason());
                     playerMatch.setGoals(List.of());
                     goalsToSave.add(goalToSave);
                     if (goalToSave.getClubMatch().getId().equals(match.getClubPlayingHome().getId())) {

@@ -27,6 +27,8 @@ public class PlayerService {
     private final PlayerClubCrudOperations playerClubCrudOperations;
     private final ClubParticipationCrudOperations clubParticipationCrudOperations;
     private final SeasonCrudOperations seasonCrudOperations;
+    private final PlayerMatchCrudOperations playerMatchCrudOperations;
+    private final GoalCrudOperations goalCrudOperations;
 
     public ResponseEntity<Object> getAllPlayers(String name,int ageMin,int ageMax,String clubName){
         try {
@@ -75,6 +77,19 @@ public class PlayerService {
         PlayerStatistics playerStatistics = new PlayerStatistics();
 
         Player player = playerCrudOperations.getById(playerId);
+        List<PlayerMatch> playerMatches = playerMatchCrudOperations.getPlayerMatchesByPlayerId(playerId);
+        List<Goal> playerGoals = new ArrayList<>();
+        playerMatches.forEach(playerMatch -> {
+            playerGoals.addAll(goalCrudOperations.getByPlayerMatchId(playerMatch.getId()));
+        });
+        playerGoals.forEach(goal -> {
+            goal.setSeason(seasonCrudOperations.getByYear(seasonYear));
+        });
+        List<Goal> scoredGoals = playerGoals.stream()
+                .filter(goal -> goal.getSeason().getYear().equals(seasonYear))
+                .filter(goal -> goal.isOwnGoal()==false)
+                .toList();
+
         if (player == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player not found, id = " + playerId + " does not exist.");
         }
@@ -86,7 +101,7 @@ public class PlayerService {
         }
 
         playerStatistics.setPlayingTime(player.getPlayingTime(seasonYear));
-        playerStatistics.setScoredGoals(player.getScoreGoals());
+        playerStatistics.setScoredGoals(scoredGoals.size());
 
         return ResponseEntity.ok(playerStatistics);
     }

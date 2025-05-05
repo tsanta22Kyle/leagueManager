@@ -63,19 +63,21 @@ public class ClubService {
         clubs.forEach(club -> {
             //if (!club.getClubMatches().isEmpty()) {
             List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(club.getId());
+            if (!clubParticipations.isEmpty()) {
 
-            ClubParticipation actualExistingClubParticipation = clubParticipations.stream()
-                    .filter(clubParticipation -> clubParticipation.getSeason().getStatus().equals(Status.STARTED))
-                    .toList().getFirst();
+                ClubParticipation actualExistingClubParticipation = clubParticipations.stream()
+                        .filter(clubParticipation -> clubParticipation.getSeason().getStatus().equals(Status.STARTED))
+                        .toList().getFirst();
 
-            ClubStatistics cls = new ClubStatistics(club);
+                ClubStatistics cls = new ClubStatistics(club);
 
-            cls.setClub(club);
-            cls.setSeasonYear(seasonYear);
-            cls.setCoach(club.getCoach());
-            cls.setRankingPoints(actualExistingClubParticipation.getPoints());
+                cls.setClub(club);
+                cls.setSeasonYear(seasonYear);
+                cls.setCoach(club.getCoach());
+                cls.setRankingPoints(actualExistingClubParticipation.getPoints());
 
-            clubStatistics.add(cls);
+                clubStatistics.add(cls);
+            }
             //}
         });
 
@@ -105,14 +107,14 @@ public class ClubService {
 
     public ResponseEntity<Object> changePlayers(String clubId, List<CreateOrUpdatePlayer> playersToSave) {
         try {
-            if(playersToSave.size()<3){
+            if (playersToSave.size() < 3) {
                 return ResponseEntity.badRequest().body("a club should be composed by 3 or more players");
             }
 
             Club existingClub = clubCrudOperations.getById(clubId);
             List<ClubParticipation> existingClubParticipations = clubParticipationCrudOperations.getManyByClubId(existingClub.getId());
             existingClub.setSeasonsParticipation(existingClubParticipations);
-            System.out.println("season existing club "+existingClub.getSeasonsParticipation());
+            System.out.println("season existing club " + existingClub.getSeasonsParticipation());
             if (existingClub == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Club not found, id = " + clubId + " does not exist.");
             }
@@ -136,7 +138,7 @@ public class ClubService {
                     player.getClubs().forEach(playerClub -> {
                         List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(playerClub.getClub().getId());
                         playerClub.getClub().setClubParticipations(clubParticipations);
-                       // System.out.println(" popo : " + playerClub.getClub().getClubParticipations());
+                        // System.out.println(" popo : " + playerClub.getClub().getClubParticipations());
                     });
                 });
                 underContractPlayers.addAll(
@@ -179,7 +181,7 @@ public class ClubService {
                             endContract.setEndDate(LocalDate.now());
                             endContract.setNumber(player.getPreferredNumber());
                             endContract.setSeason(existingClub.getActiveSeason());
-                          //  System.out.println("active season : " + existingClub.getActiveSeason());
+                            //  System.out.println("active season : " + existingClub.getActiveSeason());
                             endContract.setJoinDate(LocalDate.now());
 
                             playerClubCrudOperations.saveAll(List.of(endContract));

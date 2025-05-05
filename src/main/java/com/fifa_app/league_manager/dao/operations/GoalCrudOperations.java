@@ -20,6 +20,7 @@ import java.util.List;
 public class GoalCrudOperations implements CrudOperations<Goal> {
     private final GoalMapper goalMapper;
     private final DataSource dataSource;
+    private final SeasonCrudOperations seasonCrudOperations;
 
 
     @Override
@@ -74,7 +75,7 @@ public class GoalCrudOperations implements CrudOperations<Goal> {
     public List<Goal> saveAll(List<Goal> entities) {
         List<Goal> matchScores = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("insert into goal (id, player_match_id, own_goal, club_match_id, minute_of_goal) VALUES (?,?,?,?,?) " +
+             PreparedStatement statement = connection.prepareStatement("insert into goal (id, player_match_id, own_goal, club_match_id, minute_of_goal,season_id) VALUES (?,?,?,?,?,?) " +
                      "ON CONFLICT (id) DO UPDATE SET minute_of_goal=excluded.minute_of_goal ,own_goal=excluded.own_goal  " +
                      "RETURNING id, own_goal,club_match_id, minute_of_goal,player_match_id")) {
 
@@ -85,10 +86,13 @@ public class GoalCrudOperations implements CrudOperations<Goal> {
                     statement.setBoolean(3, entityToSave.isOwnGoal());
                     statement.setString(4, entityToSave.getClubMatch().getId());
                     statement.setInt(5, entityToSave.getMinuteOfGoal());
+                    statement.setString(6,entityToSave.getSeason().getId());
 
                     try (ResultSet resultSet = statement.executeQuery()) {
                         while (resultSet.next()) {
-                            matchScores.add(goalMapper.apply(resultSet));
+                            Goal goal = goalMapper.apply(resultSet);
+                            goal.setSeason(seasonCrudOperations.getById(resultSet.getString("season_id")));
+                            matchScores.add(goal);
                         }
                     }
                 } catch (SQLException e) {
