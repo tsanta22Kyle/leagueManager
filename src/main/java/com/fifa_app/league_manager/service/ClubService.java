@@ -52,14 +52,13 @@ public class ClubService {
         List<ClubStatistics> clubStatistics = new ArrayList<>();
         List<Season> seasons = seasonCrudOperations.getAll();
 
-        List<Club> clubs = clubCrudOperations.getAll();
-        this.setClubParticipationAndClubMatchesToClubs(clubs);
-
         boolean isProvidedSeasonYearExists = seasons.stream().anyMatch(season -> season.getYear().equals(seasonYear));
         if (!isProvidedSeasonYearExists) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Season year not found.");
         }
 
+        List<Club> clubs = clubCrudOperations.getAll();
+        this.setClubParticipationAndClubMatchesToClubs(clubs);
 
         clubs.forEach(club -> {
             //if (!club.getClubMatches().isEmpty()) {
