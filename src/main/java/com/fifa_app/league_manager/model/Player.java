@@ -20,6 +20,7 @@ public class Player {
     private Positions position;
     private String country;
     private int age;
+    @JsonIgnore
     private int preferredNumber;
     @JsonIgnore
     private List<PlayerClub> clubs = new ArrayList<>();
@@ -45,10 +46,10 @@ public class Player {
                 .orElse(null);
     }
 
-
-    public int getActualNumber() {
+    @JsonProperty("number")
+    public int getNumber() {
         if (clubs.size() > 0) {
-
+                return getClubs().stream().filter(playerClub -> playerClub.getEndDate()==null).toList().get(0).getNumber();
         }
         return preferredNumber;
     }

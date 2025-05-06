@@ -75,6 +75,10 @@ public class ClubService {
                 cls.setSeasonYear(seasonYear);
                 cls.setCoach(club.getCoach());
                 cls.setRankingPoints(actualExistingClubParticipation.getPoints());
+                cls.setScoredGoals(actualExistingClubParticipation.getScoredGoals());
+                cls.setConcededGoals(actualExistingClubParticipation.getConcededGoals());
+
+                cls.setCleanSheets(actualExistingClubParticipation.getCleanSheetNumber());
 
                 clubStatistics.add(cls);
             }
@@ -267,7 +271,7 @@ public class ClubService {
             PlayerClub playerClub = new PlayerClub();
 
             playerClub.setId(UUID.randomUUID().toString());
-            playerClub.setNumber(newPlayer.getActualNumber());
+            playerClub.setNumber(newPlayer.getNumber());
             playerClub.setSeason(actualSeason);
             playerClub.setClub(existingClub);
             playerClub.setEndDate(null);

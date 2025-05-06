@@ -25,7 +25,9 @@ public class ClubStatistics {
     private String stadium;
 
     private int rankingPoints;
-
+    private int scoredGoals;
+    private int concededGoals;
+    private int cleanSheets;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Coach coach;
 
@@ -43,7 +45,7 @@ public class ClubStatistics {
         this.yearCreation = club.getYearCreation();
     }
 
-    @JsonProperty("scoredGoals")
+  /*  @JsonProperty("scoredGoals")
     private int getScoredGoals() {
         List<Goal> clubGoals = new ArrayList<>();
 
@@ -63,9 +65,9 @@ public class ClubStatistics {
         });
 
         return clubGoals.size();
-    }
+    }*/
 
-    @JsonProperty("cleanSheets")
+   /* @JsonProperty("cleanSheets")
     private int getCleanSheets() {
         if (this.getClub().getClubMatches().isEmpty()) {
             System.out.println("0");
@@ -109,7 +111,7 @@ public class ClubStatistics {
 
         return clubGoals.stream().reduce(0, Integer::sum);
     }
-
+*/
     @JsonProperty("differenceGoals")
     private int getDifferenceGoals(){
         return this.getScoredGoals() - this.getConcededGoals();

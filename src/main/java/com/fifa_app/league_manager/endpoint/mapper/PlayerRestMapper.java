@@ -11,7 +11,7 @@ public class PlayerRestMapper {
         PlayerRest playerRest = new PlayerRest();
         playerRest.setId(player.getId());
         playerRest.setName(player.getName());
-        playerRest.setNumber(player.getActualNumber());
+        playerRest.setNumber(player.getNumber());
         return playerRest;
     }
 }
