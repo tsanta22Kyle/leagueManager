@@ -1,10 +1,6 @@
 package com.fifa_app.league_manager.dao.mapper;
 
-
-import com.fifa_app.league_manager.dao.operations.ClubCrudOperations;
-import com.fifa_app.league_manager.dao.operations.ClubMatchCrudOperations;
-import com.fifa_app.league_manager.dao.operations.MatchCrudOperations;
-import com.fifa_app.league_manager.dao.operations.PlayerMatchCrudOperations;
+import com.fifa_app.league_manager.dao.operations.SeasonCrudOperations;
 import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -17,16 +13,9 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class GoalMapper implements Function<ResultSet, Goal> {
 
-    // private final PlayerMatchCrudOperations playerMatchCrudOperations;
-    // private final ClubMatchCrudOperations clubMatchCrudOperations;
-
     @Override
     @SneakyThrows
     public Goal apply(ResultSet resultSet) {
-       // PlayerMatch scorer = playerMatchCrudOperations.getById(resultSet.getString("player_match_id"));
-       // Match match = matchCrudOperations.getById(resultSet.getString("match_id"));
-       // ClubMatch club = clubMatchCrudOperations.getById(resultSet.getString("club_match_id"));
-
         Goal goal = new Goal();
 
         goal.setId(resultSet.getString("id"));

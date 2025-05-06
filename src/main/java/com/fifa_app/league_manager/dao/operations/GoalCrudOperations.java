@@ -3,6 +3,7 @@ package com.fifa_app.league_manager.dao.operations;
 import com.fifa_app.league_manager.dao.DataSource;
 import com.fifa_app.league_manager.dao.mapper.GoalMapper;
 import com.fifa_app.league_manager.model.Goal;
+import com.fifa_app.league_manager.model.Season;
 import com.fifa_app.league_manager.service.exceptions.ServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -32,14 +33,16 @@ public class GoalCrudOperations implements CrudOperations<Goal> {
     public List<Goal> getByClubMatchId(String clubId) {
         List<Goal> goals = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement statement = conn.prepareStatement("select id, player_match_id, own_goal, club_match_id, minute_of_goal" +
+             PreparedStatement statement = conn.prepareStatement("select g.id, g.player_match_id, g.own_goal, g.club_match_id, g.season_id, g.minute_of_goal" +
                      " from goal g where g.club_match_id = ?;")) {
             statement.setString(1, clubId);
 
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    Goal goal = null;
-                    goal = goalMapper.apply(rs);
+                    Goal goal = goalMapper.apply(rs);
+                    Season season = seasonCrudOperations.getById(rs.getString("season_id"));
+
+                    goal.setSeason(season);
                     goals.add(goal);
                 }
             }
@@ -53,14 +56,17 @@ public class GoalCrudOperations implements CrudOperations<Goal> {
     public List<Goal> getByPlayerMatchId(String playerMatchId) {
         List<Goal> goals = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement statement = conn.prepareStatement("select id, player_match_id, own_goal, club_match_id, minute_of_goal" +
+             PreparedStatement statement = conn.prepareStatement("select id, player_match_id, own_goal, club_match_id, minute_of_goal, season_id" +
                      " from goal g where g.player_match_id = ?;")) {
             statement.setString(1, playerMatchId);
 
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    Goal goal = null;
-                    goal = goalMapper.apply(rs);
+                    Goal goal = goalMapper.apply(rs);
+
+                    Season season = seasonCrudOperations.getById(rs.getString("season_id"));
+                    goal.setSeason(season);
+
                     goals.add(goal);
                 }
             }
@@ -77,7 +83,7 @@ public class GoalCrudOperations implements CrudOperations<Goal> {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("insert into goal (id, player_match_id, own_goal, club_match_id, minute_of_goal,season_id) VALUES (?,?,?,?,?,?) " +
                      "ON CONFLICT (id) DO UPDATE SET minute_of_goal=excluded.minute_of_goal ,own_goal=excluded.own_goal  " +
-                     "RETURNING id, own_goal,club_match_id, minute_of_goal,player_match_id")) {
+                     "RETURNING id, own_goal,club_match_id, minute_of_goal,player_match_id, season_id")) {
 
             entities.forEach(entityToSave -> {
                 try {
