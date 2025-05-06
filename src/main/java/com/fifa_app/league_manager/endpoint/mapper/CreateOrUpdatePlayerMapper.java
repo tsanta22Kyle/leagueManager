@@ -1,12 +1,8 @@
 package com.fifa_app.league_manager.endpoint.mapper;
 
 import com.fifa_app.league_manager.endpoint.rest.CreateOrUpdatePlayer;
-import com.fifa_app.league_manager.model.Club;
 import com.fifa_app.league_manager.model.Player;
-import com.fifa_app.league_manager.model.PlayerClub;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class CreateOrUpdatePlayerMapper {
@@ -27,7 +23,7 @@ public class CreateOrUpdatePlayerMapper {
         createOrUpdatePlayer.setAge(player.getAge());
         createOrUpdatePlayer.setId(player.getId());
         createOrUpdatePlayer.setNationality(player.getCountry());
-        createOrUpdatePlayer.setNumber(player.getActualNumber());
+        createOrUpdatePlayer.setNumber(player.getNumber());
         return createOrUpdatePlayer;
     }
 }
