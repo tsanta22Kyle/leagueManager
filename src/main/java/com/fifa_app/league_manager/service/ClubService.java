@@ -37,6 +37,7 @@ public class ClubService {
     private final CreateOrUpdatePlayerMapper createOrUpdatePlayerMapper;
     private final ClubRestMapper clubRestMapper;
     private final ClubMatchService clubMatchService;
+    private final PlayerTransferCrudOperations playerTransferCrudOperations;
 
 
     public ResponseEntity<Object> getClubs() {
@@ -239,7 +240,7 @@ public class ClubService {
         }
     }
 
-    public ResponseEntity<Object> attachPlayersToAClub(String clubId, List<Player> entities) {
+    public ResponseEntity<Object> attachPlayersToAClub(String clubId, List<CreateOrUpdatePlayer> entities) {
         List<CreateOrUpdatePlayer> players = new ArrayList<>();
 
         Club existingClub = clubCrudOperations.getById(clubId);
@@ -259,12 +260,14 @@ public class ClubService {
                 .filter(clubParticipation -> clubParticipation.getSeason().getStatus().equals(Status.STARTED))
                 .toList().getFirst();
 
-        for (Player player : entities) {
+        for (CreateOrUpdatePlayer player : entities) {
+            System.out.println(player);
+
             Player foundPlayer = playerCrudOperations.getById(player.getId());
             Player newPlayer;
 
             if (foundPlayer == null) {
-                List<Player> createdPlayers = playerCrudOperations.saveAll(List.of(player));
+                List<Player> createdPlayers = playerCrudOperations.saveAll(List.of(createOrUpdatePlayerMapper.toModel(player)));
                 newPlayer = createdPlayers.getFirst();
             } else newPlayer = foundPlayer;
 
@@ -284,8 +287,10 @@ public class ClubService {
             playerTransfer.setType(TransferType.IN);
             playerTransfer.setTransferDate(Instant.now());
 
+            playerTransferCrudOperations.saveAll(List.of(playerTransfer));
+
             playerClub.setId(UUID.randomUUID().toString());
-            playerClub.setNumber(newPlayer.getNumber());
+            playerClub.setNumber(newPlayer.getPreferredNumber());
             playerClub.setSeason(actualSeason);
             playerClub.setClub(existingClub);
             playerClub.setEndDate(null);
