@@ -162,7 +162,7 @@ public class ClubService {
             ) {
                 return ResponseEntity.badRequest().body("Season already started");
             } else {
-                List<PlayerClub> endContractsToSave = new ArrayList<>();
+              //  List<PlayerClub> endContractsToSave = new ArrayList<>();
                 existingPlayers.stream()
 
                         .filter(player -> player.getActualClub() != null)
