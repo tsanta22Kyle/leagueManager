@@ -37,7 +37,7 @@ public class ClubController {
     }
 
     @PostMapping("/{id}/players")
-    public Object attachPlayersToAClub(@PathVariable String id, @RequestBody List<Player> entities) {
+    public Object attachPlayersToAClub(@PathVariable String id, @RequestBody List<CreateOrUpdatePlayer> entities) {
         return clubService.attachPlayersToAClub(id, entities);
     }
 
