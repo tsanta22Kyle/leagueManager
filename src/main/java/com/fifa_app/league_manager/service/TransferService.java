@@ -14,8 +14,6 @@ public class TransferService {
 
     private final PlayerTransferCrudOperations playerTransferCrudOperations;
 
-
-
     public ResponseEntity<Object> getAll(){
      List<PlayerTransfer> transfers =  playerTransferCrudOperations.getAll();
      return ResponseEntity.ok(transfers);

@@ -209,6 +209,7 @@ public class ClubService {
                     endContract.setSeason(existingClub.getActiveSeason());
                     endContract.setJoinDate(LocalDate.now());
 
+
                     playerClubCrudOperations.saveAll(List.of(endContract));
                 });
 
