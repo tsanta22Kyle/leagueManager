@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
@@ -274,6 +275,13 @@ public class ClubService {
             Season actualSeason = seasonCrudOperations.getById(actualExistingClubParticipation.getSeason().getId());
 
             PlayerClub playerClub = new PlayerClub();
+            PlayerTransfer playerTransfer = new PlayerTransfer();
+
+            playerTransfer.setId(UUID.randomUUID().toString());
+            playerTransfer.setClub(existingClub);
+            playerTransfer.setPlayer(newPlayer);
+            playerTransfer.setType(TransferType.IN);
+            playerTransfer.setTransferDate(Instant.now());
 
             playerClub.setId(UUID.randomUUID().toString());
             playerClub.setNumber(newPlayer.getNumber());
