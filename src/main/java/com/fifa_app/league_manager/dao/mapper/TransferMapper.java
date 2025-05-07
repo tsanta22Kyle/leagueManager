@@ -15,7 +15,7 @@ import java.sql.ResultSet;
 import java.util.function.Function;
 
 @Component@RequiredArgsConstructor
-public class TransfertMapper implements Function<ResultSet, PlayerTransfer> {
+public class TransferMapper implements Function<ResultSet, PlayerTransfer> {
 
     private final PlayerCrudOperations playerCrudOperations;
     private final ClubCrudOperations clubCrudOperations;

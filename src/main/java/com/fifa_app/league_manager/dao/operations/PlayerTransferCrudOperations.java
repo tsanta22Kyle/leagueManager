@@ -2,7 +2,7 @@ package com.fifa_app.league_manager.dao.operations;
 
 
 import com.fifa_app.league_manager.dao.DataSource;
-import com.fifa_app.league_manager.dao.mapper.TransfertMapper;
+import com.fifa_app.league_manager.dao.mapper.TransferMapper;
 import com.fifa_app.league_manager.model.PlayerTransfer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlayerTransferCrudOperations implements CrudOperations<PlayerTransfer> {
     private final DataSource dataSource;
-    private final TransfertMapper transfertMapper;
+    private final TransferMapper transferMapper;
 
 
     @Override@SneakyThrows
@@ -30,7 +30,7 @@ public class PlayerTransferCrudOperations implements CrudOperations<PlayerTransf
                 ){
             try(ResultSet resultSet = preparedStatement.executeQuery()){
                 while (resultSet.next()) {
-                    PlayerTransfer playerTransfer = transfertMapper.apply(resultSet);
+                    PlayerTransfer playerTransfer = transferMapper.apply(resultSet);
                     playerTransfers.add(playerTransfer);
                 }
             }

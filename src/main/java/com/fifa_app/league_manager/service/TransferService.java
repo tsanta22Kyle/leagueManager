@@ -2,19 +2,22 @@ package com.fifa_app.league_manager.service;
 
 
 import com.fifa_app.league_manager.dao.operations.PlayerTransferCrudOperations;
+import com.fifa_app.league_manager.model.PlayerTransfer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-@Service
-public class TransfertService {
+import java.util.List;
+
+@Service@RequiredArgsConstructor
+public class TransferService {
 
     private final PlayerTransferCrudOperations playerTransferCrudOperations;
 
-    public TransfertService(PlayerTransferCrudOperations playerTransferCrudOperations) {
-        this.playerTransferCrudOperations = playerTransferCrudOperations;
-    }
+
 
     public ResponseEntity<Object> getAll(){
-         playerTransferCrudOperations.getAll();
+     List<PlayerTransfer> transfers =  playerTransferCrudOperations.getAll();
+     return ResponseEntity.ok(transfers);
     }
 }
