@@ -87,7 +87,7 @@ public class PlayerClubCrudOperations {
             }
 
         } catch (SQLException e) {
-            throw new ServerException(e.getMessage());
+            throw new ServerException("th number is already taken");
         }
 
         return playerClubSaved;
