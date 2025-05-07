@@ -246,6 +246,11 @@ public class ClubService {
         }
 
         List<ClubParticipation> existingClubParticipation = clubParticipationCrudOperations.getManyByClubId(existingClub.getId());
+
+        if (existingClubParticipation.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This club does not participate to the STARTED season. Try later!");
+        }
+
         existingClub.setClubParticipations(existingClubParticipation);
 
         ClubParticipation actualExistingClubParticipation = existingClubParticipation.stream()
