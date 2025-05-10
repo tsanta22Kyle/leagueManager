@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,8 +23,9 @@ public class ClubCrudOperations implements CrudOperations<Club> {
     private final ClubMapper clubMapper;
     private final CoachCrudOperations coachCrudOperations;
     private final ClubCoachCrudOperations clubCoachCrudOperations;
+
     //private final ClubParticipationCrudOperations clubParticipationCrudOperations;
-   // private final ClubMatchCrudOperations clubMatchCrudOperations;
+    // private final ClubMatchCrudOperations clubMatchCrudOperations;
     @Override
     public List<Club> getAll() {
         List<Club> clubs = new ArrayList<>();
@@ -76,12 +78,11 @@ public class ClubCrudOperations implements CrudOperations<Club> {
 
     @SneakyThrows
     public List<Club> saveAll(List<Club> entities) {
-        List<Club> clubList = new ArrayList<>();
+        // List<Club> clubList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("insert into club (id, name, acronym, year_creation, stadium)"
                      + " values (?, ?, ?, ?, ?) on conflict (id) do update set name=excluded.name,"
-                     + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium"
-                     + " returning id, name, stadium, year_creation, acronym")) {
+                     + " acronym=excluded.acronym, year_creation=excluded.year_creation, stadium=excluded.stadium")) {
 
             entities.forEach(entityToSave -> {
                 try {
@@ -96,33 +97,20 @@ public class ClubCrudOperations implements CrudOperations<Club> {
                     throw new RuntimeException(e);
                 }
             });
-            try (ResultSet resultSet = statement.executeQuery()) {
-                entities.forEach(this::saveCoachAndClubCoach);
-
-                while (resultSet.next()) {
-                    Club savedClub = clubMapper.apply(resultSet);
-
-                    ClubCoach clubCoach = clubCoachCrudOperations.findByClubId(savedClub.getId());
-                    Coach coach = coachCrudOperations.getCoachById(clubCoach.getCoach().getId());
-
-                    // List<ClubParticipation> clubParticipations = clubParticipationCrudOperations.getManyByClubId(resultSet.getString("id"));
-                    // savedClub.setClubParticipations(clubParticipations);
-                    savedClub.setCoach(coach);
-                    clubList.add(savedClub);
-                }
+            int[] rs = statement.executeBatch();
+            if (Arrays.stream(rs).noneMatch(v -> v == 1)) {
+                System.out.println("One of entries failed in clubs");
+                return null;
             }
-            return clubList;
+
+            entities.forEach(this::saveCoachAndClubCoach);
+
+            return entities;
         }
     }
 
     private void saveCoachAndClubCoach(Club entityToSave) {
         Coach coach = coachCrudOperations.save(entityToSave.getCoach());
-        Club clubCreated = this.getById(entityToSave.getId());
-
-        if (clubCreated == null) {
-            System.out.println(entityToSave.getName() + " is null.");
-        }
-
         ClubCoach clubCoach = new ClubCoach();
         clubCoach.setId(UUID.randomUUID().toString());
         clubCoach.setClub(entityToSave);
@@ -130,6 +118,4 @@ public class ClubCrudOperations implements CrudOperations<Club> {
 
         clubCoachCrudOperations.save(clubCoach);
     }
-
-
 }
