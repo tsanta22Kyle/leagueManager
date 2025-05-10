@@ -25,33 +25,30 @@ public class SeasonService {
     }
 
     public ResponseEntity<Object> saveAll(List<Season> entities) {
-        List<Season> seasons = seasonCrudOperations.saveAll(entities);
+        seasonCrudOperations.saveAll(entities);
         List<Club> clubToAttachToSeason = clubCrudOperations.getAll();
 
-        clubToAttachToSeason.forEach(club -> {
-            ClubParticipation clubParticipation = new ClubParticipation();
+        entities.forEach(season -> {
+            clubToAttachToSeason.forEach(club -> {
+                ClubParticipation clubParticipation = new ClubParticipation();
 
-            clubParticipation.setId(UUID.randomUUID().toString());
-            seasons.forEach(clubParticipation::setSeason);
-            clubParticipation.setClub(club);
-            clubParticipation.setPoints(0);
-            clubParticipation.setWins(0);
-            clubParticipation.setConcededGoals(0);
-            clubParticipation.setScoredGoals(0);
-            clubParticipation.setCleanSheetNumber(0);
-            clubParticipation.setLosses(0);
-            clubParticipation.setDraws(0);
-            clubParticipation.setCleanSheetNumber(0);
+                clubParticipation.setId(UUID.randomUUID().toString());
+                clubParticipation.setSeason(season);
+                clubParticipation.setClub(club);
+                clubParticipation.setPoints(0);
+                clubParticipation.setWins(0);
+                clubParticipation.setConcededGoals(0);
+                clubParticipation.setScoredGoals(0);
+                clubParticipation.setCleanSheetNumber(0);
+                clubParticipation.setLosses(0);
+                clubParticipation.setDraws(0);
+                clubParticipation.setCleanSheetNumber(0);
 
-            clubParticipationCrudOperations.save(clubParticipation);
+                clubParticipationCrudOperations.save(clubParticipation);
+            });
         });
 
-        seasons.forEach(season -> {
-
-        });
-
-
-        return ResponseEntity.ok().body(seasons);
+        return ResponseEntity.ok().body(entities);
     }
 
     public ResponseEntity<Object> updateStatus(long year, UpdateSeasonStatus entity) {

@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,14 +45,15 @@ public class SeasonCrudOperations implements CrudOperations<Season> {
 
     @SneakyThrows
     public List<Season> saveAll(List<Season> entities) {
-        List<Season> seasons = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("insert into season (id, alias, year, status) values (?, ?, ?, cast(? as season_status))"
-                    + " on conflict (year) do update set year=excluded.year"
-                    + " returning id, alias, year, status")) {
+                    + " on conflict (year) do update set year=excluded.year")) {
                 entities.forEach(entityToSave -> {
                     try {
-                        statement.setString(1, UUID.randomUUID().toString());
+                        String id = UUID.randomUUID().toString();
+                        ids.add(id);
+                        statement.setString(1, id);
                         statement.setString(2, entityToSave.getAlias());
                         statement.setLong(3, entityToSave.getYear().getValue());
 
@@ -62,12 +64,17 @@ public class SeasonCrudOperations implements CrudOperations<Season> {
                         throw new RuntimeException(e);
                     }
                 });
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        seasons.add(seasonMapper.apply(resultSet));
-                    }
+                int[] rs = statement.executeBatch();
+                if (!Arrays.stream(rs).allMatch(v -> v == 1)) {
+                    System.out.println("One of entries failed in seasons");
+                    return null;
                 }
-                return seasons;
+                for (int i = 0; i < ids.size(); i++) {
+                    entities.get(i).setStatus(Status.NOT_STARTED);
+                    entities.get(i).setId(ids.get(i));
+                }
+
+                return entities;
             }
         }
     }
