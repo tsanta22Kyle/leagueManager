@@ -1,14 +1,13 @@
 package com.fifa_app.league_manager.service;
 
-import com.fifa_app.league_manager.dao.operations.ClubCrudOperations;
-import com.fifa_app.league_manager.dao.operations.ClubParticipationCrudOperations;
-import com.fifa_app.league_manager.dao.operations.SeasonCrudOperations;
+import com.fifa_app.league_manager.dao.operations.*;
 import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +17,8 @@ public class SeasonService {
     private final SeasonCrudOperations seasonCrudOperations;
     private final ClubCrudOperations clubCrudOperations;
     private final ClubParticipationCrudOperations clubParticipationCrudOperations;
+    private final PlayerCrudOperations playerCrudOperations;
+    private final PlayerSeasonCrudOperation playerSeasonCrudOperation;
 
     public ResponseEntity<Object> getSeasons() {
         List<Season> seasons = seasonCrudOperations.getAll();
@@ -27,6 +28,9 @@ public class SeasonService {
     public ResponseEntity<Object> saveAll(List<Season> entities) {
         seasonCrudOperations.saveAll(entities);
         List<Club> clubToAttachToSeason = clubCrudOperations.getAll();
+        List<Player> playersToAttachToSeason = playerCrudOperations.getAll();
+
+        List<PlayerStatistics> playerStatisticsListToSave = new ArrayList<>();
 
         entities.forEach(season -> {
             clubToAttachToSeason.forEach(club -> {
@@ -46,7 +50,19 @@ public class SeasonService {
 
                 clubParticipationCrudOperations.save(clubParticipation);
             });
+            playersToAttachToSeason.forEach(player -> {
+                PlayerStatistics playerStatistics = new PlayerStatistics();
+                playerStatistics.setPlayer(player);
+                playerStatistics.setSeason(season);
+                playerStatistics.setPlayingTime(new PlayingTime(UUID.randomUUID().toString(),0,DurationUnit.SECOND));
+                playerStatistics.setScoredGoals(0);
+                playerStatisticsListToSave.add(playerStatistics);
+            });
         });
+        playerSeasonCrudOperation.saveAll(playerStatisticsListToSave);
+
+
+
 
         return ResponseEntity.ok().body(entities);
     }

@@ -324,6 +324,12 @@ public class MatchService {
 
             playerMatches.forEach(playerMatch -> {
                 List<Goal> playerGoals = goalCrudOperations.getByPlayerMatchId(playerMatch.getId());
+                PlayerStatistics playerStatistics = new PlayerStatistics();
+                playerStatistics.setPlayer(playerMatch.getPlayer());
+                playerStatistics.setSeason(match.getSeason());
+                playerStatistics.setScoredGoals(playerGoals.size());
+
+
                 playerGoals.forEach(goal -> {
                     goal.setPlayerMatch(playerMatch);
                 });
