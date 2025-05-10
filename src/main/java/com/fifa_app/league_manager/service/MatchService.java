@@ -36,6 +36,7 @@ public class MatchService {
     private final PlayerClubCrudOperations playerClubCrudOperations;
     private final PlayingTimeCrudOperations playingTimeCrudOperations;
     private final ScorerRestMapper scorerRestMapper;
+    private final PlayerSeasonCrudOperation playerSeasonCrudOperation;
 
     public ResponseEntity<Object> createAllMatches(Year seasonYear) {
         Season season = seasonCrudOperations.getByYear(seasonYear);
@@ -324,12 +325,12 @@ public class MatchService {
 
             playerMatches.forEach(playerMatch -> {
                 List<Goal> playerGoals = goalCrudOperations.getByPlayerMatchId(playerMatch.getId());
-                PlayerStatistics playerStatistics = new PlayerStatistics();
-                playerStatistics.setPlayer(playerMatch.getPlayer());
-                playerStatistics.setSeason(match.getSeason());
-                playerStatistics.setScoredGoals(playerGoals.size());
 
+                PlayerStatistics playerStatistics = playerSeasonCrudOperation.getByPlayerIdAndSeasonId(playerMatch.getPlayer().getId(),match.getSeason().getId());
+                playerStatistics.setScoredGoals(playerStatistics.getScoredGoals()+playerGoals.size());
+                playerStatistics.getPlayingTime().setValue(playerStatistics.getPlayingTime().getValue()+90);
 
+                playerSeasonCrudOperation.saveAll(List.of(playerStatistics));
                 playerGoals.forEach(goal -> {
                     goal.setPlayerMatch(playerMatch);
                 });
