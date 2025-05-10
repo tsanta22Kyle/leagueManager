@@ -78,7 +78,7 @@ public class CoachCrudOperations implements CrudOperations<Coach> {
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement =
                          connection.prepareStatement("insert into coach (id, name, country) values (?, ?, ?)"
-                                 + " on conflict (name) do update set name=excluded.name"
+                                 + " on conflict (id) do update set name=excluded.name"
                                  + " returning id, name, country")) {
                 try {
                     String id = entity.getId() != null ? entity.getId() : UUID.randomUUID().toString();

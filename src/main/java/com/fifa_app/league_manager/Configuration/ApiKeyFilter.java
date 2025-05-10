@@ -12,11 +12,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class ApiKeyFilter extends OncePerRequestFilter { // Renommez pour plus de clarté
+public class ApiKeyFilter extends OncePerRequestFilter {
 
     private final String validApiKey;
 
-    // Injection plus propre via constructeur
     public ApiKeyFilter(@Value("${app.api.key}") String validApiKey) {
         this.validApiKey = validApiKey;
     }
@@ -28,7 +27,6 @@ public class ApiKeyFilter extends OncePerRequestFilter { // Renommez pour plus d
 
         String apiKey = request.getHeader("X-API-KEY");
 
-        // Debug crucial
         System.out.println("Clé reçue: " + apiKey);
         System.out.println("Clé attendue: " + validApiKey);
 
