@@ -29,6 +29,7 @@ public class PlayerService {
     private final SeasonCrudOperations seasonCrudOperations;
     private final PlayerMatchCrudOperations playerMatchCrudOperations;
     private final GoalCrudOperations goalCrudOperations;
+    private final PlayerSeasonCrudOperation playerSeasonCrudOperation;
 
     public ResponseEntity<Object> getAllPlayers(String name,int ageMin,int ageMax,String clubName){
         try {
@@ -103,6 +104,9 @@ public class PlayerService {
         playerStatistics.setPlayingTime(player.getPlayingTime(seasonYear));
         playerStatistics.setScoredGoals(scoredGoals.size());
 
-        return ResponseEntity.ok(playerStatistics);
+        PlayerStatistics finalPlayerStatistics = playerSeasonCrudOperation.getByPlayerIdAndSeasonId(playerId,seasonCrudOperations.getByYear(seasonYear).getId());
+
+
+        return ResponseEntity.ok(finalPlayerStatistics);
     }
 }
