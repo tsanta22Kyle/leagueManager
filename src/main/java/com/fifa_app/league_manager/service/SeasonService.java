@@ -56,10 +56,11 @@ public class SeasonService {
                 playerStatistics.setSeason(season);
                 playerStatistics.setPlayingTime(new PlayingTime(UUID.randomUUID().toString(),0,DurationUnit.SECOND));
                 playerStatistics.setScoredGoals(0);
-                playerStatisticsListToSave.add(playerStatistics);
+              //  playerStatisticsListToSave.add(playerStatistics);
+                playerSeasonCrudOperation.saveAll(List.of(playerStatistics));
             });
         });
-        playerSeasonCrudOperation.saveAll(playerStatisticsListToSave);
+      //  playerSeasonCrudOperation.saveAll(playerStatisticsListToSave);
 
 
 
