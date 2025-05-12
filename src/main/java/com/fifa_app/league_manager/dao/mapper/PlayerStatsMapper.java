@@ -2,10 +2,7 @@ package com.fifa_app.league_manager.dao.mapper;
 
 import com.fifa_app.league_manager.dao.operations.PlayerCrudOperations;
 import com.fifa_app.league_manager.dao.operations.SeasonCrudOperations;
-import com.fifa_app.league_manager.model.Player;
-import com.fifa_app.league_manager.model.PlayerStatistics;
-import com.fifa_app.league_manager.model.PlayingTime;
-import com.fifa_app.league_manager.model.Season;
+import com.fifa_app.league_manager.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -28,8 +25,8 @@ public class PlayerStatsMapper implements Function<ResultSet, PlayerStatistics> 
         Player player = playerCrudOperations.getById(resultSet.getString("player_id"));
 
         PlayingTime playingTime = new PlayingTime();
-        playingTime.setValue(resultSet.getInt("scored_goals"));
-
+        playingTime.setValue(resultSet.getInt("total_playing_time"));
+        playingTime.setUnit(DurationUnit.SECOND);
         PlayerStatistics playerStatistics = new PlayerStatistics();
 
         playerStatistics.setScoredGoals(resultSet.getInt("scored_goals"));

@@ -48,7 +48,7 @@ public class SeasonCrudOperations implements CrudOperations<Season> {
         List<String> ids = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("insert into season (id, alias, year, status) values (?, ?, ?, cast(? as season_status))"
-                    + " on conflict (year) do update set year=excluded.year")) {
+                    + " on conflict (year) do nothing")) {
                 entities.forEach(entityToSave -> {
                     try {
                         String id = UUID.randomUUID().toString();

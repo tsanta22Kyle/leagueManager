@@ -77,8 +77,8 @@ public class PlayerSeasonCrudOperation implements CrudOperations<PlayerStatistic
     public PlayerStatistics getByPlayerIdAndSeasonId(String playerId, String seasonId) {
         PlayerStatistics stat = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select id, player_id, season_id, total_playing_time, scored_goals" +
-                     " from player_season where player_id = ? and season_id = ? order by id;")) {
+             PreparedStatement statement = connection.prepareStatement("select  player_id, season_id, total_playing_time, scored_goals" +
+                     " from player_season where player_id = ? and season_id = ? ")) {
             statement.setString(1, playerId);
             statement.setString(2, seasonId);
             /*
@@ -98,7 +98,7 @@ public class PlayerSeasonCrudOperation implements CrudOperations<PlayerStatistic
     public List<PlayerStatistics> getBySeasonId(String seasonId) {
         List<PlayerStatistics> stats = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("select id, player_id, season_id, total_playing_time, scored_goals" +
+             PreparedStatement statement = connection.prepareStatement("select player_id, season_id, total_playing_time, scored_goals" +
                      " from player_season where season_id = ? order by id;")) {
             statement.setString(1, seasonId);
             /*
